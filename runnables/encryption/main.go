@@ -5,7 +5,7 @@ import (
 
 	b64 "encoding/base64"
 
-	enc "github.com/scrambledeggs/booky-go-helpers/encryption"
+	enc "github.com/scrambledeggs/booky-go-common/encryption"
 )
 
 // Test run for generating encrypted keys
@@ -33,4 +33,5 @@ func main() {
 
 	plaintext, _ = enc.DecryptB64(ciphertextB64, passphrase)
 	fmt.Printf("Decrypted using b64 value: %s\n", plaintext)
+	fmt.Printf("Decrypted using b64 value: %s\n", string(plaintext))
 }

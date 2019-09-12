@@ -1,0 +1,11 @@
+development:
+  db:
+    table: "dev_table"
+  app:
+    key: "super-secret-key"
+
+staging:
+  db:
+    table: "staging_table"
+  app:
+    key: "ENC(c29tZS1zZWN1cmUtf1BEWSy8ASREzYA75VJOfFKeRQG91oGKsWANildH2zE=)"
