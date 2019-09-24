@@ -5,12 +5,17 @@ import (
 	"crypto/cipher"
 	"crypto/sha256"
 	b64 "encoding/base64"
+	"errors"
 	"io"
 	"strings"
 )
 
 // Encrypt data using AES
 func Encrypt(data []byte, passphrase string) ([]byte, error) {
+	if len(passphrase) < 12 {
+		return data, errors.New("Passphrase should be at least 12 characters long.")
+	}
+
 	gcm := setupCipher(data, passphrase)
 
 	nonce := make([]byte, gcm.NonceSize())
@@ -25,6 +30,10 @@ func Encrypt(data []byte, passphrase string) ([]byte, error) {
 
 // Encrypt data using AES and encode to B64
 func EncryptB64(data string, passphrase string) (string, error) {
+	if len(passphrase) < 12 {
+		return data, errors.New("Passphrase should be at least 12 characters long.")
+	}
+
 	ciphertext, err := Encrypt([]byte(data), passphrase)
 	if err != nil {
 		return "", err
