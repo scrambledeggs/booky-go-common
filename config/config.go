@@ -97,7 +97,7 @@ func (c *config) setKeyVarEnv(key string, val string) error {
 	// Handle encrypted values
 	isEncrypted, _ := regexp.MatchString(`^ENC(.*)$`, val)
 	if isEncrypted {
-		trimmed := strings.TrimRight(strings.TrimLeft(val, "ENC("), ")")
+		trimmed := strings.TrimSuffix(strings.TrimPrefix(val, "ENC("), ")")
 		temp, err := enc.DecryptB64(trimmed, *c.cipherpass)
 		if err != nil {
 			return err
