@@ -17,3 +17,13 @@ Usage:
 
 # [Module] config/
 Used to load environment variables given a valid environment, config file, and target data
+
+# [Module] photo/
+Generates Booky's Image URL. Module is named `photo` as to not override go's `image` package
+
+Usage: FormatImageURL(ID int, assetType string, filename string, extra ...string)
+ 	- ID - ID of entity.
+	- assetType - Type of entity (e.g. 'offers' or 'brands')
+	- filename - Image filename
+	- extra - Accepts up to two optional parameters. Sets imageSize(default:`original`) and imageType(default:`photo`).
+	- Sample Output: "https://assets1.phonebooky.com/brands/photos/000/000/020/original/sample.jpg"
