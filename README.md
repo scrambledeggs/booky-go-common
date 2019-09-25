@@ -27,3 +27,13 @@ Usage:
 - `ApplyEnvConfig()`- *Required.* Sets environment variables based on config read.
 - `SetConfig(configFile, configFilePath, configFileType)` - *Optional.* Sets config file name and path. Defaults to **./config.yml**
 - `SetCipherPass(passphrase)` - *Required when config contains encrypted keys.* Provide passphrase for the encrypted data
+
+# [Module] photo/
+Generates Booky's Image URL. Module is named `photo` as to not override go's `image` package
+
+Usage: FormatImageURL(ID int, assetType string, filename string, extra ...string)
+ 	- ID - ID of entity.
+	- assetType - Type of entity (e.g. 'offers' or 'brands')
+	- filename - Image filename
+	- extra - Accepts up to two optional parameters. Sets imageSize(default:`original`) and imageType(default:`photo`).
+	- Sample Output: "https://assets1.phonebooky.com/brands/photos/000/000/020/original/sample.jpg"
