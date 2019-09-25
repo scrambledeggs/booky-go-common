@@ -2,12 +2,12 @@ package config
 
 import (
 	"errors"
-	"log"
 	"os"
 	"regexp"
 	"strings"
 
 	enc "github.com/scrambledeggs/booky-go-common/encryption"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -17,6 +17,8 @@ const (
 	ENV_STAGING string = "staging"
 	ENV_TEST    string = "test"
 	ENV_PROD    string = "production"
+
+	LOG_SECTION string = "COMMON/CONFIG"
 )
 
 type Config interface {
@@ -80,6 +82,7 @@ func (c *config) ApplyEnvConfig() error {
 	for k, v := range *c.configMap {
 		err := c.setKeyVarEnv(k, viper.GetString(prefix+v))
 		if err != nil {
+			log.WithFields(log.Fields{"-section": LOG_SECTION, "field": k}).Warn("Issue encountered while trying to set env variable.")
 			return err
 		}
 	}
@@ -100,6 +103,10 @@ func (c *config) setKeyVarEnv(key string, val string) error {
 		trimmed := strings.TrimSuffix(strings.TrimPrefix(val, "ENC("), ")")
 		temp, err := enc.DecryptB64(trimmed, *c.cipherpass)
 		if err != nil {
+			log.WithFields(log.Fields{
+				"-section": LOG_SECTION,
+				"value":    trimmed,
+			}).Info("Issue encountered while trying to decrypt a value.")
 			return err
 		}
 
@@ -125,7 +132,7 @@ func (c *config) checkEnvValidity() bool {
 		}
 	}
 
-	log.Print("Could not detect valid environment. Setting Config ENVIRONMENT to 'development'.")
+	log.WithFields(log.Fields{"-section": LOG_SECTION}).Info("Could not detect valid environment. Setting Config ENVIRONMENT to 'development'.")
 	defaultEnv := ENV_DEV
 	c.environment = &defaultEnv
 	return false
@@ -140,6 +147,11 @@ func setViperConfig(configFile string, configPath string, configType string) err
 
 	err := viper.ReadInConfig()
 	if err != nil {
+		log.WithFields(log.Fields{"-section": LOG_SECTION,
+			"config_file": configFile,
+			"config_path": configPath,
+			"config_type": configType,
+		}).Warn("Unable to read config file properly.")
 		return err
 	}
 
