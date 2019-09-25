@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 
 	enc "github.com/scrambledeggs/booky-go-common/encryption"
@@ -94,7 +95,8 @@ func (c *config) setKeyVarEnv(key string, val string) error {
 	finalVal := val
 
 	// Handle encrypted values
-	if strings.HasPrefix(val, "ENC(") && strings.HasSuffix(val, ")") {
+	isEncrypted, _ := regexp.MatchString(`^ENC(.*)$`, val)
+	if isEncrypted {
 		trimmed := strings.TrimRight(strings.TrimLeft(val, "ENC("), ")")
 		temp, err := enc.DecryptB64(trimmed, *c.cipherpass)
 		if err != nil {
