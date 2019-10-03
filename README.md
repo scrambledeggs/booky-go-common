@@ -31,7 +31,8 @@ Usage:
 # [Module] photo/
 Generates Booky's Image URL. Module is named `photo` as to not override go's `image` package
 
-Usage: FormatImageURL(ID int, assetType string, filename string, extra ...string)
+Usage: 
++ FormatImageURL(ID int, assetType string, filename string, extra ...string)
  	- ID - ID of entity.
 	- assetType - Type of entity (e.g. 'offers' or 'brands')
 	- filename - Image filename
