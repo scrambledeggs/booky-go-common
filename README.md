@@ -40,7 +40,7 @@ Usage:
 	- Sample Output: "https://assets1.phonebooky.com/brands/photos/000/000/020/original/sample.jpg"
 
 # [Module] marshalling/
-Customized MarshalMap for dynamodb attributes. This will keep empty values (empty strings, zeros, empty structs/objects) and persist them in dynamodb tables.
+Customized MarshalMap for dynamodb attributes. This will keep empty values _(empty strings, zeros, empty structs/objects)_ to persist them in dynamodb tables.
 
 Usage: 
 + CustomMarshalMap(in interface{})
