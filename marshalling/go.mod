@@ -1,4 +1,4 @@
-module scrambledeggs/booky-go-common/marshalling
+module github.com/scrambledeggs/booky-go-common/marshalling
 
 go 1.12
 
