@@ -37,3 +37,23 @@ Usage: FormatImageURL(ID int, assetType string, filename string, extra ...string
 	- filename - Image filename
 	- extra - Accepts up to two optional parameters. Sets imageSize(default:`original`) and imageType(default:`photo`).
 	- Sample Output: "https://assets1.phonebooky.com/brands/photos/000/000/020/original/sample.jpg"
+
+# [Module] marshalling/
+Customized MarshalMap for dynamodb attributes. This will keep empty values (empty strings, zeros, empty structs/objects) and persist them in dynamodb tables.
+
+Usage: CustomMarshalMap(in interface{})
+	- in - interface{} of value struct such as `{Renamed Brand 1 0xc0000874b0  inactive 0xc0000908c0}`
+	- Sample Output (type `map[string]*dynamodb.AttributeValue`): 
+	```
+	map[brand_name:{
+		S: "Renamed Brand 1"
+	} brand_status:{
+		S: "inactive"
+	} description:{
+		NULL: true
+	} offer:{
+		NULL: true
+	} offer_limit:{
+		N: "0"
+	}]
+	```
