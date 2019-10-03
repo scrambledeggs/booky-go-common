@@ -41,10 +41,13 @@ Usage: FormatImageURL(ID int, assetType string, filename string, extra ...string
 # [Module] marshalling/
 Customized MarshalMap for dynamodb attributes. This will keep empty values (empty strings, zeros, empty structs/objects) and persist them in dynamodb tables.
 
-Usage: CustomMarshalMap(in interface{})
+Usage: 
++ CustomMarshalMap(in interface{})
 	- in - interface{} of value struct such as `{Renamed Brand 1 0xc0000874b0  inactive 0xc0000908c0}`
-	- Sample Output (type `map[string]*dynamodb.AttributeValue`): 
-	```
+
+	- Sample Output of type `map[string]*dynamodb.AttributeValue`:
+
+	```go
 	map[brand_name:{
 		S: "Renamed Brand 1"
 	} brand_status:{
