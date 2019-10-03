@@ -31,9 +31,33 @@ Usage:
 # [Module] photo/
 Generates Booky's Image URL. Module is named `photo` as to not override go's `image` package
 
-Usage: FormatImageURL(ID int, assetType string, filename string, extra ...string)
+Usage: 
++ FormatImageURL(ID int, assetType string, filename string, extra ...string)
  	- ID - ID of entity.
 	- assetType - Type of entity (e.g. 'offers' or 'brands')
 	- filename - Image filename
 	- extra - Accepts up to two optional parameters. Sets imageSize(default:`original`) and imageType(default:`photo`).
 	- Sample Output: "https://assets1.phonebooky.com/brands/photos/000/000/020/original/sample.jpg"
+
+# [Module] marshalling/
+Customized MarshalMap for dynamodb attributes. This will keep empty values _(empty strings, zeros, empty structs/objects)_ to persist them in dynamodb tables.
+
+Usage: 
++ CustomMarshalMap(in interface{})
+	- in - interface{} of value struct such as `{Renamed Brand 1 0xc0000874b0  inactive 0xc0000908c0}`
+
+	- Sample Output of type `map[string]*dynamodb.AttributeValue`:
+
+	```go
+	map[brand_name:{
+		S: "Renamed Brand 1"
+	} brand_status:{
+		S: "inactive"
+	} description:{
+		NULL: true
+	} offer:{
+		NULL: true
+	} offer_limit:{
+		N: "0"
+	}]
+	```
