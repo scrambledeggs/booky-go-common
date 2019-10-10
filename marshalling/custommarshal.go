@@ -18,8 +18,13 @@ func CustomMarshalMap(in interface{}) (map[string]*dynamodb.AttributeValue, erro
 		return map[string]*dynamodb.AttributeValue{}, err
 	}
 
+	checkAndConvertIfNull(aav.M)
+	return aav.M, nil
+}
+
+func checkAndConvertIfNull(attr map[string]*dynamodb.AttributeValue) {
 	// loop over map[string]*dynamodb.AttributeValue
-	for key, elem := range aav.M {
+	for key, elem := range attr {
 		// convert elem to Go value from *dynamodb.AttributeValue
 		var i interface{}
 		_ = dynamodbattribute.Unmarshal(elem, &i)
@@ -27,15 +32,18 @@ func CustomMarshalMap(in interface{}) (map[string]*dynamodb.AttributeValue, erro
 		// change go value to reflect.Value for null checking
 		r := reflect.ValueOf(i)
 		if emptyValue(r) {
-			delete(aav.M, key)
+			delete(attr, key)
 
 			// convert back to *dynamodb.AttributeValue
 			t := true
-			aav.M[key] = &dynamodb.AttributeValue{NULL: &t}
+			attr[key] = &dynamodb.AttributeValue{NULL: &t}
+		}
+
+		if r.Kind() == reflect.Map {
+			// recursively check maps for empty values
+			checkAndConvertIfNull(elem.M)
 		}
 	}
-
-	return aav.M, nil
 }
 
 func emptyValue(v reflect.Value) bool {
