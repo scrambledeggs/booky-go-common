@@ -7,13 +7,13 @@ import (
 )
 
 func TestMessage(t *testing.T) {
-	message, err := NewMessageEvent()
+	message, err := NewEventMessage()
 	assert.NotNil(t, message)
 	assert.Nil(t, err)
 }
 
 func TestGuuid(t *testing.T) {
-	message, err := NewMessageEvent()
+	message, err := NewEventMessage()
 	assert.NotNil(t, message)
 	assert.NotNil(t, message.GetUUID())
 	assert.Nil(t, err)

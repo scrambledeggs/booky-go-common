@@ -15,8 +15,8 @@ type EventMessage struct {
 	payload interface{}
 }
 
-// NewMessageEvent constructor
-func NewMessageEvent() (Message, error) {
+// NewEventMessage constructor
+func NewEventMessage() (Message, error) {
 	strGuuid, err := guuid.NewRandom()
 	if err != nil {
 		return nil, err
