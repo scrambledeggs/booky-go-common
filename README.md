@@ -61,3 +61,6 @@ Usage:
 		N: "0"
 	}]
 	```
+
+# [Module] rds/
+Comprises of a universal function for calling the RDS-based API for Smart Homescreen-related requirements.
