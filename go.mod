@@ -3,8 +3,8 @@ module github.com/scrambledeggs/booky-go-common
 go 1.12
 
 require (
-	github.com/scrambledeggs/booky-go-common/config v0.0.0 // indirect
-	github.com/scrambledeggs/booky-go-common/encryption v0.0.0-20190913074022-cfd0ef746a40
+	github.com/scrambledeggs/booky-go-common/config v0.0.0-20191003085113-ddb19ea6d89c // indirect
+	github.com/scrambledeggs/booky-go-common/encryption v0.0.0-20191003071505-64d725be3c0
 	github.com/scrambledeggs/booky-go-common/rds v0.0.0
 	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/viper v1.4.0
