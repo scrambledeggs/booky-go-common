@@ -61,3 +61,6 @@ Usage:
 		N: "0"
 	}]
 	```
+
+# [Module] rds/
+Used for calling the RDS-based PostgreSQL client DB.
