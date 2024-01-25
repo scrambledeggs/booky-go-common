@@ -7,10 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestReduce(t *testing.T) {
-	data := []string{"the", "quick", "brown"}
+var reduceData = []string{"the", "quick", "brown"}
 
-	reducedSlice := Reduce(data, func(list map[string]string, item string) map[string]string {
+func TestReduce(t *testing.T) {
+	reducedSlice := Reduce(reduceData, func(list map[string]string, item string) map[string]string {
 		list[item] = fmt.Sprintf("%s-naknang", item)
 
 		return list

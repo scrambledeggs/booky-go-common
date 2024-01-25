@@ -6,12 +6,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var containsData = []string{"naknang", "patatas", "sonof", "potato"}
+
 func TestContains(t *testing.T) {
-	data := []string{"naknang", "patatas", "sonof", "potato"}
-
-	existing := Contains("naknang", data)
+	existing := Contains("naknang", containsData)
 	assert.Equal(t, true, existing)
+}
 
-	nonExisting := Contains("bwakanang", data)
+func TestContainsNonExisting(t *testing.T) {
+	nonExisting := Contains("bwakanang", containsData)
 	assert.Equal(t, false, nonExisting)
 }

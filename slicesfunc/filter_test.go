@@ -6,10 +6,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFilter(t *testing.T) {
-	data := []string{"the", "quick", "brown", "potato", "sonof", "the", "potato", "the", "fudge"}
+var filterData = []string{"the", "quick", "brown", "potato", "sonof", "the", "potato", "the", "fudge"}
 
-	newSlice := Filter(data, func(item string) bool {
+func TestFilter(t *testing.T) {
+	newSlice := Filter(filterData, func(item string) bool {
 		return item == "the"
 	})
 
