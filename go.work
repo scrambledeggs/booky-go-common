@@ -3,6 +3,7 @@ go 1.21.1
 use (
 	./config
 	./encryption
+	./logger
 	./marshalling
 	./photo
 )
