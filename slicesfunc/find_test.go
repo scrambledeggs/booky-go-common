@@ -1,6 +1,7 @@
 package slicesfunc
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,4 +22,15 @@ func TestFindNonExisting(t *testing.T) {
 		return item == "naknang"
 	})
 	assert.Equal(t, false, ok)
+}
+
+func ExampleFind() {
+	data := []string{"the", "quick", "brown", "potato"}
+	brown, ok := Find(data, func(item string) bool {
+		return item == "brown"
+	})
+
+	fmt.Println(*brown, ok)
+
+	// Output: brown true
 }

@@ -1,6 +1,7 @@
 package slicesfunc
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,4 +17,13 @@ func TestContains(t *testing.T) {
 func TestContainsNonExisting(t *testing.T) {
 	nonExisting := Contains("bwakanang", containsData)
 	assert.Equal(t, false, nonExisting)
+}
+
+func ExampleContains() {
+	data := []string{"naknang", "patatas", "sonof", "potato"}
+	contains := Contains("naknang", data)
+
+	fmt.Println(contains)
+
+	// Output: true
 }

@@ -1,6 +1,7 @@
 package slicesfunc
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,4 +15,15 @@ func TestFilter(t *testing.T) {
 	})
 
 	assert.Equal(t, len(newSlice), 3)
+}
+
+func ExampleFilter() {
+	data := []string{"the", "quick", "brown", "potato", "sonof", "the", "potato", "the", "fudge"}
+	newSlice := Filter(data, func(item string) bool {
+		return item == "the"
+	})
+
+	fmt.Println(newSlice)
+
+	// Output: [the the the]
 }
