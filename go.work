@@ -7,4 +7,5 @@ use (
 	./marshalling
 	./photo
 	./slicesfunc
+	./api-gateway-response
 )
