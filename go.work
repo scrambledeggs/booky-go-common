@@ -1,6 +1,8 @@
 go 1.21.1
 
 use (
+	./api-gateway-response
+	./assert
 	./config
 	./encryption
 	./logger
