@@ -6,30 +6,16 @@ var allowHeaders = os.Getenv("CORS_ALLOWED_HEADERS")
 var allowOrigins = os.Getenv("CORS_ALLOWED_ORIGINS")
 var allowMethods = os.Getenv("CORS_ALLOWED_METHODS")
 
-var PreflightHttpHeaders = map[string]string{
-	"Access-Control-Allow-Origin":  allowOrigins,
-	"Access-Control-Allow-Methods": "OPTIONS",
-	"Access-Control-Allow-Headers": allowHeaders,
-}
-
-var HttpHeaders = map[string]string{
+var HTTPHeaders = map[string]string{
 	"Access-Control-Allow-Origin":  allowOrigins,
 	"Access-Control-Allow-Methods": allowMethods,
 	"Access-Control-Allow-Headers": allowHeaders,
 	"Content-Type":                 "application/json",
 }
 
-type ErrorResponse struct {
-	Message string `json:"message"`
-	Code    string `json:"code"`
-}
-
-type SuccessResponse struct {
-	Results  any `json:"results"`
-	Metadata any `json:"metadata"`
-}
-
 type PaginationMetadata struct {
-	PageCount   int `json:"page_count"`
-	ResultCount int `json:"result_count"`
+	Page           int `json:"page"`
+	ResultsPerPage int `json:"results_per_page"`
+	TotalCount     int `json:"total_count"`
+	MaxPage        int `json:"max_page"`
 }

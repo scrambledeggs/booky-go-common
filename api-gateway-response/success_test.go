@@ -39,20 +39,36 @@ func TestMultipleSuccessResponse(t *testing.T) {
 	}
 
 	metadata := PaginationMetadata{
-		PageCount:   10,
-		ResultCount: 100,
+		Page:           1,
+		ResultsPerPage: 10,
+		MaxPage:        10,
+		TotalCount:     100,
 	}
 
 	response, err := MultipleSuccessResponse(status, body, metadata)
 
-	var responseBody SuccessResponse
+	if err != nil {
+		panic(err.Error())
+	}
+
+	var responseBody MultipleSuccessResponseBody
 	json.Unmarshal([]byte(response.Body), &responseBody)
 
-	metadataStr, _ := json.Marshal(responseBody.Metadata)
+	metadataStr, err := json.Marshal(responseBody.Metadata)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
 	var metadataRes PaginationMetadata
 	json.Unmarshal([]byte(metadataStr), &metadataRes)
 
-	resultsStr, _ := json.Marshal(responseBody.Results)
+	resultsStr, err := json.Marshal(responseBody.Results)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
 	var resultsRes []map[string]string
 	json.Unmarshal([]byte(resultsStr), &resultsRes)
 
@@ -90,25 +106,37 @@ func ExampleMultipleSuccessResponse() {
 	}
 
 	metadata := PaginationMetadata{
-		PageCount:   10,
-		ResultCount: 100,
+		Page:           1,
+		ResultsPerPage: 10,
+		MaxPage:        10,
+		TotalCount:     100,
 	}
 
 	multiResponse, _ := MultipleSuccessResponse(status, multipleBody, metadata)
 
-	var responseBody SuccessResponse
+	var responseBody MultipleSuccessResponseBody
 	json.Unmarshal([]byte(multiResponse.Body), &responseBody)
 
-	metadataStr, _ := json.Marshal(responseBody.Metadata)
+	metadataStr, err := json.Marshal(responseBody.Metadata)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
 	var metadataRes PaginationMetadata
 	json.Unmarshal([]byte(metadataStr), &metadataRes)
 
-	resultsStr, _ := json.Marshal(responseBody.Results)
+	resultsStr, err := json.Marshal(responseBody.Results)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
 	var resultsRes []map[string]string
 	json.Unmarshal([]byte(resultsStr), &resultsRes)
 
 	fmt.Println(multiResponse.Body, multiResponse.StatusCode)
 
 	// Output:
-	// {"results":[{"naknang":"sonof","patatas":"potato"},{"potato":"patatas","sonof":"naknang"}],"metadata":{"page_count":10,"result_count":100}} 200
+	// {"results":[{"naknang":"sonof","patatas":"potato"},{"potato":"patatas","sonof":"naknang"}],"metadata":{"page":1,"results_per_page":10,"total_count":100,"max_page":10}} 200
 }

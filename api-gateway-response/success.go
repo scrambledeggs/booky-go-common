@@ -6,15 +6,24 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
+type MultipleSuccessResponseBody struct {
+	Results  any `json:"results"`
+	Metadata any `json:"metadata"`
+}
+
 func SingleSuccessResponse(status int, data any) (events.APIGatewayProxyResponse, error) {
 	var strBody []byte
 
 	response := events.APIGatewayProxyResponse{
-		Headers:    HttpHeaders,
+		Headers:    HTTPHeaders,
 		StatusCode: status,
 	}
 
-	strBody, _ = json.Marshal(data)
+	strBody, err := json.Marshal(data)
+
+	if err != nil {
+		panic(err.Error())
+	}
 
 	response.Body = string(strBody)
 
@@ -25,11 +34,11 @@ func MultipleSuccessResponse(status int, data any, metadata any) (events.APIGate
 	var strBody []byte
 
 	response := events.APIGatewayProxyResponse{
-		Headers:    HttpHeaders,
+		Headers:    HTTPHeaders,
 		StatusCode: status,
 	}
 
-	body := SuccessResponse{
+	body := MultipleSuccessResponseBody{
 		Results: data,
 	}
 
@@ -37,7 +46,11 @@ func MultipleSuccessResponse(status int, data any, metadata any) (events.APIGate
 		body.Metadata = metadata
 	}
 
-	strBody, _ = json.Marshal(body)
+	strBody, err := json.Marshal(body)
+
+	if err != nil {
+		panic(err.Error())
+	}
 
 	response.Body = string(strBody)
 
