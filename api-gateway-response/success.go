@@ -29,7 +29,7 @@ func MultipleSuccessResponse(status int, data any, metadata any) (events.APIGate
 		StatusCode: status,
 	}
 
-	body := SuccessResponseBody{
+	body := SuccessResponse{
 		Results: data,
 	}
 

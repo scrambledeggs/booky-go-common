@@ -24,12 +24,12 @@ type ErrorResponse struct {
 	Code    string `json:"code"`
 }
 
-type SuccessResponseBody struct {
+type SuccessResponse struct {
 	Results  any `json:"results"`
 	Metadata any `json:"metadata"`
 }
 
 type PaginationMetadata struct {
-	PageCount   int `json:"max_page"`
-	ResultCount int `json:"results_per_page"`
+	PageCount   int `json:"page_count"`
+	ResultCount int `json:"result_count"`
 }

@@ -45,7 +45,7 @@ func TestMultipleSuccessResponse(t *testing.T) {
 
 	response, err := MultipleSuccessResponse(status, body, metadata)
 
-	var responseBody SuccessResponseBody
+	var responseBody SuccessResponse
 	json.Unmarshal([]byte(response.Body), &responseBody)
 
 	metadataStr, _ := json.Marshal(responseBody.Metadata)
@@ -96,7 +96,7 @@ func ExampleMultipleSuccessResponse() {
 
 	multiResponse, _ := MultipleSuccessResponse(status, multipleBody, metadata)
 
-	var responseBody SuccessResponseBody
+	var responseBody SuccessResponse
 	json.Unmarshal([]byte(multiResponse.Body), &responseBody)
 
 	metadataStr, _ := json.Marshal(responseBody.Metadata)
@@ -110,5 +110,5 @@ func ExampleMultipleSuccessResponse() {
 	fmt.Println(multiResponse.Body, multiResponse.StatusCode)
 
 	// Output:
-	// {"results":[{"naknang":"sonof","patatas":"potato"},{"potato":"patatas","sonof":"naknang"}],"metadata":{"max_page":10,"results_per_page":100}} 200
+	// {"results":[{"naknang":"sonof","patatas":"potato"},{"potato":"patatas","sonof":"naknang"}],"metadata":{"page_count":10,"result_count":100}} 200
 }
