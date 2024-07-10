@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/scrambledeggs/booky-go-common/assert"
 )
 
 func TestSingleErrorResponse(t *testing.T) {
@@ -26,10 +26,11 @@ func TestSingleErrorResponse(t *testing.T) {
 
 	json.Unmarshal([]byte(response.Body), &responseBody)
 
-	assert.Equal(t, err, nil)
+	assert.ShouldBeNil(t, err)
 
-	assert.Equal(t, responseBody.Code, errorObj.Code)
-	assert.Equal(t, responseBody.Message, errorObj.Message)
+	assert.DeepEqual(t, responseBody, errorObj, "invalid value for error response")
+
+	assert.Equal(t, response.StatusCode, status, "invalid status code")
 }
 
 func TestMultipleErrorsResponse(t *testing.T) {
@@ -55,12 +56,12 @@ func TestMultipleErrorsResponse(t *testing.T) {
 
 	json.Unmarshal([]byte(response.Body), &responseBody)
 
-	assert.Equal(t, err, nil)
+	assert.ShouldBeNil(t, err)
 
-	assert.Equal(t, responseBody.Errors[0].Code, error1Obj.Code)
-	assert.Equal(t, responseBody.Errors[0].Message, error1Obj.Message)
-	assert.Equal(t, responseBody.Errors[1].Code, error2Obj.Code)
-	assert.Equal(t, responseBody.Errors[1].Message, error2Obj.Message)
+	assert.DeepEqual(t, responseBody.Errors[0], error1Obj, "invalid error value for first element")
+	assert.DeepEqual(t, responseBody.Errors[1], error2Obj, "invalid error value for second element")
+
+	assert.Equal(t, response.StatusCode, status, "invalid status code")
 }
 
 func ExampleSingleErrorResponse() {

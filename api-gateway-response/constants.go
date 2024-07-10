@@ -30,8 +30,6 @@ type SuccessResponseBody struct {
 }
 
 type PaginationMetadata struct {
-	MaxPage        int `json:"max_page"`
-	Page           int `json:"page"`
-	ResultsPerPage int `json:"results_per_page"`
-	TotalCount     int `json:"total_count"`
+	PageCount   int `json:"max_page"`
+	ResultCount int `json:"results_per_page"`
 }
