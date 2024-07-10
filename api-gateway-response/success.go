@@ -2,13 +2,14 @@ package apigatewayresponse
 
 import (
 	"encoding/json"
+	"math"
 
 	"github.com/aws/aws-lambda-go/events"
 )
 
 type MultipleSuccessResponseBody struct {
 	Results  any `json:"results"`
-	Metadata any `json:"metadata"`
+	Metadata any `json:"metadata,omitempty"`
 }
 
 func SingleSuccessResponse(status int, data any) (events.APIGatewayProxyResponse, error) {
@@ -43,7 +44,18 @@ func MultipleSuccessResponse(status int, data any, metadata any) (events.APIGate
 	}
 
 	if metadata != nil {
-		body.Metadata = metadata
+		mtdt, _ := metadata.(map[string]any)
+
+		totalCount, isTotalCountTypeInt := mtdt["total_count"].(int)
+		resultsPerPage, isResultsPerPageTypeInt := mtdt["results_per_page"].(int)
+
+		if isResultsPerPageTypeInt && isTotalCountTypeInt {
+			maxPage := int(math.Ceil(float64(totalCount) / float64(resultsPerPage)))
+
+			mtdt["max_page"] = maxPage
+		}
+
+		body.Metadata = mtdt
 	}
 
 	strBody, err := json.Marshal(body)

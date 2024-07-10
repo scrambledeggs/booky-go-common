@@ -38,11 +38,10 @@ func TestMultipleSuccessResponse(t *testing.T) {
 		{"sonof": "naknang", "potato": "patatas"},
 	}
 
-	metadata := PaginationMetadata{
-		Page:           1,
-		ResultsPerPage: 10,
-		MaxPage:        10,
-		TotalCount:     100,
+	metadata := map[string]any{
+		"page":             1,
+		"results_per_page": 10,
+		"total_count":      100,
 	}
 
 	response, err := MultipleSuccessResponse(status, body, metadata)
@@ -60,7 +59,7 @@ func TestMultipleSuccessResponse(t *testing.T) {
 		panic(err.Error())
 	}
 
-	var metadataRes PaginationMetadata
+	var metadataRes map[string]int
 	json.Unmarshal([]byte(metadataStr), &metadataRes)
 
 	resultsStr, err := json.Marshal(responseBody.Results)
@@ -74,7 +73,10 @@ func TestMultipleSuccessResponse(t *testing.T) {
 
 	assert.ShouldBeNil(t, err)
 
-	assert.DeepEqual(t, metadataRes, metadata, "invalid metadata")
+	assert.Equal(t, metadataRes["page"], metadata["page"], "invalid metadata")
+	assert.Equal(t, metadataRes["results_per_page"], metadata["results_per_page"], "invalid metadata")
+	assert.Equal(t, metadataRes["total_count"], metadata["total_count"], "invalid metadata")
+	assert.Equal(t, metadataRes["max_page"], 10, "invalid metadata")
 	assert.DeepEqual(t, resultsRes[0], body[0], "invalid value first element")
 	assert.DeepEqual(t, resultsRes[1], body[1], "invalid value for second element")
 
@@ -105,11 +107,10 @@ func ExampleMultipleSuccessResponse() {
 		{"sonof": "naknang", "potato": "patatas"},
 	}
 
-	metadata := PaginationMetadata{
-		Page:           1,
-		ResultsPerPage: 10,
-		MaxPage:        10,
-		TotalCount:     100,
+	metadata := map[string]any{
+		"page":             1,
+		"results_per_page": 10,
+		"total_count":      100,
 	}
 
 	multiResponse, _ := MultipleSuccessResponse(status, multipleBody, metadata)
@@ -123,7 +124,7 @@ func ExampleMultipleSuccessResponse() {
 		panic(err.Error())
 	}
 
-	var metadataRes PaginationMetadata
+	var metadataRes map[string]any
 	json.Unmarshal([]byte(metadataStr), &metadataRes)
 
 	resultsStr, err := json.Marshal(responseBody.Results)
@@ -138,5 +139,5 @@ func ExampleMultipleSuccessResponse() {
 	fmt.Println(multiResponse.Body, multiResponse.StatusCode)
 
 	// Output:
-	// {"results":[{"naknang":"sonof","patatas":"potato"},{"potato":"patatas","sonof":"naknang"}],"metadata":{"page":1,"results_per_page":10,"total_count":100,"max_page":10}} 200
+	// {"results":[{"naknang":"sonof","patatas":"potato"},{"potato":"patatas","sonof":"naknang"}],"metadata":{"max_page":10,"page":1,"results_per_page":10,"total_count":100}} 200
 }

@@ -17,5 +17,4 @@ type PaginationMetadata struct {
 	Page           int `json:"page"`
 	ResultsPerPage int `json:"results_per_page"`
 	TotalCount     int `json:"total_count"`
-	MaxPage        int `json:"max_page"`
 }
