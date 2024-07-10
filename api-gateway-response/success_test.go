@@ -9,7 +9,7 @@ import (
 	"github.com/scrambledeggs/booky-go-common/assert"
 )
 
-func TestSuccessResponseSingleResult(t *testing.T) {
+func TestSingleSuccessResponse(t *testing.T) {
 	status := http.StatusOK
 
 	body := map[string]string{
@@ -17,7 +17,7 @@ func TestSuccessResponseSingleResult(t *testing.T) {
 		"patatas": "potato",
 	}
 
-	response, err := SuccessResponse(status, body)
+	response, err := SingleSuccessResponse(status, body)
 
 	var responseBody map[string]string
 
@@ -30,7 +30,7 @@ func TestSuccessResponseSingleResult(t *testing.T) {
 	assert.Equal(t, response.StatusCode, status, "invalid status code")
 }
 
-func TestSuccessResponseMultipleResults(t *testing.T) {
+func TestMultipleSuccessResponse(t *testing.T) {
 	status := http.StatusOK
 
 	body := []map[string]string{
@@ -43,7 +43,7 @@ func TestSuccessResponseMultipleResults(t *testing.T) {
 		ResultCount: 100,
 	}
 
-	response, err := SuccessResponse(status, body, metadata)
+	response, err := MultipleSuccessResponse(status, body, metadata)
 
 	var responseBody SuccessResponseBody
 	json.Unmarshal([]byte(response.Body), &responseBody)
@@ -65,7 +65,7 @@ func TestSuccessResponseMultipleResults(t *testing.T) {
 	assert.Equal(t, response.StatusCode, status, "invalid status code")
 }
 
-func ExampleSuccessResponse() {
+func ExampleSingleSuccessResponse() {
 	status := http.StatusOK
 
 	singleBody := map[string]string{
@@ -73,7 +73,16 @@ func ExampleSuccessResponse() {
 		"patatas": "potato",
 	}
 
-	singleResponse, _ := SuccessResponse(status, singleBody)
+	singleResponse, _ := SingleSuccessResponse(status, singleBody)
+
+	fmt.Println(singleResponse.Body, singleResponse.StatusCode)
+
+	// Output:
+	// {"naknang":"sonof","patatas":"potato"} 200
+}
+
+func ExampleMultipleSuccessResponse() {
+	status := http.StatusOK
 
 	multipleBody := []map[string]string{
 		{"naknang": "sonof", "patatas": "potato"},
@@ -85,7 +94,7 @@ func ExampleSuccessResponse() {
 		ResultCount: 100,
 	}
 
-	multiResponse, _ := SuccessResponse(status, multipleBody, metadata)
+	multiResponse, _ := MultipleSuccessResponse(status, multipleBody, metadata)
 
 	var responseBody SuccessResponseBody
 	json.Unmarshal([]byte(multiResponse.Body), &responseBody)
@@ -98,10 +107,8 @@ func ExampleSuccessResponse() {
 	var resultsRes []map[string]string
 	json.Unmarshal([]byte(resultsStr), &resultsRes)
 
-	fmt.Println(singleResponse.Body, singleResponse.StatusCode)
 	fmt.Println(multiResponse.Body, multiResponse.StatusCode)
 
 	// Output:
-	// {"naknang":"sonof","patatas":"potato"} 200
 	// {"results":[{"naknang":"sonof","patatas":"potato"},{"potato":"patatas","sonof":"naknang"}],"metadata":{"max_page":10,"results_per_page":100}} 200
 }
