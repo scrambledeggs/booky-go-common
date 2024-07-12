@@ -6,36 +6,49 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
-type MultipleErrorsResponseType struct {
-	Errors []ErrorResponse `json:"errors"`
+type ErrorResponseBody struct {
+	Message string `json:"message"`
+	Code    string `json:"code"`
 }
 
-func MultipleErrorsResponse(status int, errors []ErrorResponse) (events.APIGatewayProxyResponse, error) {
+type MultipleErrorResponseBody struct {
+	Errors []ErrorResponseBody `json:"errors"`
+}
+
+func MultipleErrorResponse(status int, errors []ErrorResponseBody) (events.APIGatewayProxyResponse, error) {
 	response := events.APIGatewayProxyResponse{
-		Headers:    HttpHeaders,
+		Headers:    HTTPHeaders,
 		StatusCode: status,
 	}
 
-	body := MultipleErrorsResponseType{
+	body := MultipleErrorResponseBody{
 		Errors: errors,
 	}
 
-	rData, _ := json.Marshal(body)
+	strBody, err := json.Marshal(body)
 
-	response.Body = string(rData)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	response.Body = string(strBody)
 
 	return response, nil
 }
 
-func SingleErrorResponse(status int, err ErrorResponse) (events.APIGatewayProxyResponse, error) {
+func SingleErrorResponse(status int, err ErrorResponseBody) (events.APIGatewayProxyResponse, error) {
 	response := events.APIGatewayProxyResponse{
-		Headers:    HttpHeaders,
+		Headers:    HTTPHeaders,
 		StatusCode: status,
 	}
 
-	rData, _ := json.Marshal(err)
+	strBody, er := json.Marshal(err)
 
-	response.Body = string(rData)
+	if er != nil {
+		panic(er.Error())
+	}
+
+	response.Body = string(strBody)
 
 	return response, nil
 }

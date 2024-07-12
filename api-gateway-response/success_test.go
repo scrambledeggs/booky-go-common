@@ -9,7 +9,7 @@ import (
 	"github.com/scrambledeggs/booky-go-common/assert"
 )
 
-func TestSuccessResponseSingleResult(t *testing.T) {
+func TestSingleSuccessResponse(t *testing.T) {
 	status := http.StatusOK
 
 	body := map[string]string{
@@ -17,7 +17,7 @@ func TestSuccessResponseSingleResult(t *testing.T) {
 		"patatas": "potato",
 	}
 
-	response, err := SuccessResponse(status, body)
+	response, err := SingleSuccessResponse(status, body)
 
 	var responseBody map[string]string
 
@@ -30,7 +30,7 @@ func TestSuccessResponseSingleResult(t *testing.T) {
 	assert.Equal(t, response.StatusCode, status, "invalid status code")
 }
 
-func TestSuccessResponseMultipleResults(t *testing.T) {
+func TestMultipleSuccessResponse(t *testing.T) {
 	status := http.StatusOK
 
 	body := []map[string]string{
@@ -38,34 +38,52 @@ func TestSuccessResponseMultipleResults(t *testing.T) {
 		{"sonof": "naknang", "potato": "patatas"},
 	}
 
-	metadata := PaginationMetadata{
-		PageCount:   10,
-		ResultCount: 100,
+	metadata := map[string]any{
+		"page":             1,
+		"results_per_page": 10,
+		"total_count":      100,
 	}
 
-	response, err := SuccessResponse(status, body, metadata)
+	response, err := MultipleSuccessResponse(status, body, metadata)
 
-	var responseBody SuccessResponseBody
+	if err != nil {
+		panic(err.Error())
+	}
+
+	var responseBody MultipleSuccessResponseBody
 	json.Unmarshal([]byte(response.Body), &responseBody)
 
-	metadataStr, _ := json.Marshal(responseBody.Metadata)
-	var metadataRes PaginationMetadata
+	metadataStr, err := json.Marshal(responseBody.Metadata)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	var metadataRes map[string]int
 	json.Unmarshal([]byte(metadataStr), &metadataRes)
 
-	resultsStr, _ := json.Marshal(responseBody.Results)
+	resultsStr, err := json.Marshal(responseBody.Results)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
 	var resultsRes []map[string]string
 	json.Unmarshal([]byte(resultsStr), &resultsRes)
 
 	assert.ShouldBeNil(t, err)
 
-	assert.DeepEqual(t, metadataRes, metadata, "invalid metadata")
+	assert.Equal(t, metadataRes["page"], metadata["page"], "invalid metadata")
+	assert.Equal(t, metadataRes["results_per_page"], metadata["results_per_page"], "invalid metadata")
+	assert.Equal(t, metadataRes["total_count"], metadata["total_count"], "invalid metadata")
+	assert.Equal(t, metadataRes["max_page"], 10, "invalid metadata")
 	assert.DeepEqual(t, resultsRes[0], body[0], "invalid value first element")
 	assert.DeepEqual(t, resultsRes[1], body[1], "invalid value for second element")
 
 	assert.Equal(t, response.StatusCode, status, "invalid status code")
 }
 
-func ExampleSuccessResponse() {
+func ExampleSingleSuccessResponse() {
 	status := http.StatusOK
 
 	singleBody := map[string]string{
@@ -73,35 +91,53 @@ func ExampleSuccessResponse() {
 		"patatas": "potato",
 	}
 
-	singleResponse, _ := SuccessResponse(status, singleBody)
+	singleResponse, _ := SingleSuccessResponse(status, singleBody)
+
+	fmt.Println(singleResponse.Body, singleResponse.StatusCode)
+
+	// Output:
+	// {"naknang":"sonof","patatas":"potato"} 200
+}
+
+func ExampleMultipleSuccessResponse() {
+	status := http.StatusOK
 
 	multipleBody := []map[string]string{
 		{"naknang": "sonof", "patatas": "potato"},
 		{"sonof": "naknang", "potato": "patatas"},
 	}
 
-	metadata := PaginationMetadata{
-		PageCount:   10,
-		ResultCount: 100,
+	metadata := map[string]any{
+		"page":             1,
+		"results_per_page": 10,
+		"total_count":      100,
 	}
 
-	multiResponse, _ := SuccessResponse(status, multipleBody, metadata)
+	multiResponse, _ := MultipleSuccessResponse(status, multipleBody, metadata)
 
-	var responseBody SuccessResponseBody
+	var responseBody MultipleSuccessResponseBody
 	json.Unmarshal([]byte(multiResponse.Body), &responseBody)
 
-	metadataStr, _ := json.Marshal(responseBody.Metadata)
-	var metadataRes PaginationMetadata
+	metadataStr, err := json.Marshal(responseBody.Metadata)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	var metadataRes map[string]any
 	json.Unmarshal([]byte(metadataStr), &metadataRes)
 
-	resultsStr, _ := json.Marshal(responseBody.Results)
+	resultsStr, err := json.Marshal(responseBody.Results)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
 	var resultsRes []map[string]string
 	json.Unmarshal([]byte(resultsStr), &resultsRes)
 
-	fmt.Println(singleResponse.Body, singleResponse.StatusCode)
 	fmt.Println(multiResponse.Body, multiResponse.StatusCode)
 
 	// Output:
-	// {"naknang":"sonof","patatas":"potato"} 200
-	// {"results":[{"naknang":"sonof","patatas":"potato"},{"potato":"patatas","sonof":"naknang"}],"metadata":{"max_page":10,"results_per_page":100}} 200
+	// {"results":[{"naknang":"sonof","patatas":"potato"},{"potato":"patatas","sonof":"naknang"}],"metadata":{"max_page":10,"page":1,"results_per_page":10,"total_count":100}} 200
 }

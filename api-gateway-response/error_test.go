@@ -15,14 +15,14 @@ func TestSingleErrorResponse(t *testing.T) {
 
 	err := errors.New("invalid arguments")
 
-	errorObj := ErrorResponse{
+	errorObj := ErrorResponseBody{
 		Message: err.Error(),
 		Code:    "INVALID_ARGUMENTS",
 	}
 
 	response, err := SingleErrorResponse(status, errorObj)
 
-	var responseBody ErrorResponse
+	var responseBody ErrorResponseBody
 
 	json.Unmarshal([]byte(response.Body), &responseBody)
 
@@ -38,21 +38,21 @@ func TestMultipleErrorsResponse(t *testing.T) {
 
 	err1 := errors.New("invalid name")
 
-	error1Obj := ErrorResponse{
+	error1Obj := ErrorResponseBody{
 		Message: err1.Error(),
 		Code:    "INVALID_ARGUMENTS",
 	}
 
 	err2 := errors.New("invalid slug")
 
-	error2Obj := ErrorResponse{
+	error2Obj := ErrorResponseBody{
 		Message: err2.Error(),
 		Code:    "INVALID_ARGUMENTS",
 	}
 
-	response, err := MultipleErrorsResponse(status, []ErrorResponse{error1Obj, error2Obj})
+	response, err := MultipleErrorResponse(status, []ErrorResponseBody{error1Obj, error2Obj})
 
-	var responseBody MultipleErrorsResponseType
+	var responseBody MultipleErrorResponseBody
 
 	json.Unmarshal([]byte(response.Body), &responseBody)
 
@@ -69,7 +69,7 @@ func ExampleSingleErrorResponse() {
 
 	err := errors.New("invalid arguments")
 
-	errorObj := ErrorResponse{
+	errorObj := ErrorResponseBody{
 		Message: err.Error(),
 		Code:    "INVALID_ARGUMENTS",
 	}
@@ -86,19 +86,19 @@ func ExampleMultipleErrorsResponse() {
 
 	err1 := errors.New("invalid name")
 
-	error1Obj := ErrorResponse{
+	error1Obj := ErrorResponseBody{
 		Message: err1.Error(),
 		Code:    "INVALID_ARGUMENTS",
 	}
 
 	err2 := errors.New("invalid slug")
 
-	error2Obj := ErrorResponse{
+	error2Obj := ErrorResponseBody{
 		Message: err2.Error(),
 		Code:    "INVALID_ARGUMENTS",
 	}
 
-	response, _ := MultipleErrorsResponse(status, []ErrorResponse{error1Obj, error2Obj})
+	response, _ := MultipleErrorResponse(status, []ErrorResponseBody{error1Obj, error2Obj})
 
 	fmt.Println(response.Body, response.StatusCode)
 
