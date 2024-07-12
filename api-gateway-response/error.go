@@ -25,13 +25,13 @@ func MultipleErrorResponse(status int, errors []ErrorResponseBody) (events.APIGa
 		Errors: errors,
 	}
 
-	rData, err := json.Marshal(body)
+	strBody, err := json.Marshal(body)
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	response.Body = string(rData)
+	response.Body = string(strBody)
 
 	return response, nil
 }
@@ -42,13 +42,13 @@ func SingleErrorResponse(status int, err ErrorResponseBody) (events.APIGatewayPr
 		StatusCode: status,
 	}
 
-	rData, er := json.Marshal(err)
+	strBody, er := json.Marshal(err)
 
 	if er != nil {
 		panic(er.Error())
 	}
 
-	response.Body = string(rData)
+	response.Body = string(strBody)
 
 	return response, nil
 }
