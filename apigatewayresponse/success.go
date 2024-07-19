@@ -46,11 +46,11 @@ func MultipleSuccessResponse(status int, data any, metadata any) (events.APIGate
 	if metadata != nil {
 		mtdt, _ := metadata.(map[string]any)
 
-		totalCount, isTotalCountTypeInt := mtdt["total_count"].(int)
-		resultsPerPage, isResultsPerPageTypeInt := mtdt["results_per_page"].(int)
+		totalCount, isTotalCountTypeInt64 := mtdt["total_count"].(int64)
+		resultsPerPage, isResultsPerPageTypeInt64 := mtdt["results_per_page"].(int64)
 
-		if isResultsPerPageTypeInt && isTotalCountTypeInt {
-			maxPage := int(math.Ceil(float64(totalCount) / float64(resultsPerPage)))
+		if isResultsPerPageTypeInt64 && isTotalCountTypeInt64 {
+			maxPage := int64(math.Ceil(float64(totalCount) / float64(resultsPerPage)))
 
 			mtdt["max_page"] = maxPage
 		}

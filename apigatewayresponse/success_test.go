@@ -39,9 +39,9 @@ func TestMultipleSuccessResponse(t *testing.T) {
 	}
 
 	metadata := map[string]any{
-		"page":             1,
-		"results_per_page": 10,
-		"total_count":      100,
+		"page":             int64(1),
+		"results_per_page": int64(10),
+		"total_count":      int64(100),
 	}
 
 	response, err := MultipleSuccessResponse(status, body, metadata)
@@ -59,7 +59,7 @@ func TestMultipleSuccessResponse(t *testing.T) {
 		panic(err.Error())
 	}
 
-	var metadataRes map[string]int
+	var metadataRes map[string]int64
 	json.Unmarshal([]byte(metadataStr), &metadataRes)
 
 	resultsStr, err := json.Marshal(responseBody.Results)
@@ -76,7 +76,7 @@ func TestMultipleSuccessResponse(t *testing.T) {
 	assert.Equal(t, metadataRes["page"], metadata["page"], "invalid metadata")
 	assert.Equal(t, metadataRes["results_per_page"], metadata["results_per_page"], "invalid metadata")
 	assert.Equal(t, metadataRes["total_count"], metadata["total_count"], "invalid metadata")
-	assert.Equal(t, metadataRes["max_page"], 10, "invalid metadata")
+	assert.Equal(t, metadataRes["max_page"], int64(10), "invalid metadata")
 	assert.DeepEqual(t, resultsRes[0], body[0], "invalid value first element")
 	assert.DeepEqual(t, resultsRes[1], body[1], "invalid value for second element")
 
@@ -108,9 +108,9 @@ func ExampleMultipleSuccessResponse() {
 	}
 
 	metadata := map[string]any{
-		"page":             1,
-		"results_per_page": 10,
-		"total_count":      100,
+		"page":             int64(1),
+		"results_per_page": int64(10),
+		"total_count":      int64(100),
 	}
 
 	multiResponse, _ := MultipleSuccessResponse(status, multipleBody, metadata)
@@ -124,7 +124,7 @@ func ExampleMultipleSuccessResponse() {
 		panic(err.Error())
 	}
 
-	var metadataRes map[string]any
+	var metadataRes map[string]int64
 	json.Unmarshal([]byte(metadataStr), &metadataRes)
 
 	resultsStr, err := json.Marshal(responseBody.Results)
