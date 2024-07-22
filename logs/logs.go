@@ -16,7 +16,7 @@ const (
 
 type logEntry struct {
 	Level   string   `json:"level"`
-	Env     []string `json:"environment"`
+	Env     []string `json:"env"`
 	Request any      `json:"request"`
 	Message string   `json:"message"`
 	Data    any      `json:"data"`
@@ -38,6 +38,10 @@ func Warn(message string, data any) {
 
 func Error(message string, data any) {
 	logIt(ERROR, message, data)
+}
+
+func Fatal(message string, data any) {
+	logIt(FATAL, message, data)
 }
 
 func logIt(level string, message string, data any) {
