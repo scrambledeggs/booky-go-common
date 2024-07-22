@@ -15,11 +15,12 @@ const (
 )
 
 type logEntry struct {
-	Level   string   `json:"level"`
-	Env     []string `json:"env"`
-	Request any      `json:"request"`
-	Message string   `json:"message"`
-	Data    any      `json:"data"`
+	Level    string   `json:"level"`
+	Env      []string `json:"env"`
+	Request  any      `json:"request"`
+	Function string   `json:function`
+	Message  string   `json:"message"`
+	Data     any      `json:"data"`
 }
 
 var Request any
@@ -46,11 +47,12 @@ func Fatal(message string, data any) {
 
 func logIt(level string, message string, data any) {
 	le := logEntry{
-		Level:   level,
-		Request: Request,
-		Env:     os.Environ(),
-		Message: message,
-		Data:    data,
+		Level:    level,
+		Request:  Request,
+		Function: os.Getenv("AWS_LAMBDA_FUNCTION_NAME"),
+		Env:      os.Environ(),
+		Message:  message,
+		Data:     data,
 	}
 
 	l, err := json.Marshal(le)
