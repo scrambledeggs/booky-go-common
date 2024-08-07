@@ -9,49 +9,62 @@ import (
 const (
 	DEBUG = "Debug"
 	INFO  = "Info"
+	TRACE = "Trace"
 	WARN  = "Warn"
 	ERROR = "Error"
 	FATAL = "Fatal"
+
+	PRODUCTION_ENV = "production"
 )
 
 type logEntry struct {
 	Level    string   `json:"level"`
 	Env      []string `json:"env"`
 	Request  any      `json:"request"`
-	Function string   `json:function`
-	Message  string   `json:"message"`
+	Function string   `json:"function"`
+	AppEnv   string   `json:"app_env"`
+	Note     string   `json:"note"`
 	Data     any      `json:"data"`
 }
 
 var Request any
 
-func Debug(message string, data any) {
-	logIt(DEBUG, message, data)
+func Debug(note string, data any) {
+	if os.Getenv("APP_ENV") == PRODUCTION_ENV {
+		return
+	}
+
+	logIt(DEBUG, note, data)
 }
 
-func Info(message string, data any) {
-	logIt(INFO, message, data)
+func Trace(note string, data any) {
+	logIt(TRACE, note, data)
 }
 
-func Warn(message string, data any) {
-	logIt(WARN, message, data)
+func Info(note string, data any) {
+	logIt(INFO, note, data)
 }
 
-func Error(message string, data any) {
-	logIt(ERROR, message, data)
+func Warn(note string, data any) {
+	logIt(WARN, note, data)
 }
 
-func Fatal(message string, data any) {
-	logIt(FATAL, message, data)
+func Error(note string, data any) {
+	logIt(ERROR, note, data)
 }
 
-func logIt(level string, message string, data any) {
+func Fatal(note string, data any) {
+	logIt(FATAL, note, data)
+}
+
+func logIt(level string, note string, data any) {
 	le := logEntry{
 		Level:    level,
+		Env:      os.Environ(),
 		Request:  Request,
 		Function: os.Getenv("AWS_LAMBDA_FUNCTION_NAME"),
-		Env:      os.Environ(),
-		Message:  message,
+		AppEnv:   os.Getenv("APP_ENV"),
+		Note:     note,
 		Data:     data,
 	}
 
