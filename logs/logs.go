@@ -78,12 +78,20 @@ func logIt(level string, note string, data any) {
 		Data:     data,
 	}
 
-	l, err := json.Marshal(le)
+	l, err := jsonMarshal(le)
 	if err != nil {
 		panic(err.Error())
 	}
 
 	log.Print(string(l))
+}
+
+func jsonMarshal(le logEntry) ([]byte, error) {
+	if le.Level == DEBUG {
+		return json.MarshalIndent(le, "", "  ")
+	}
+
+	return json.Marshal(le)
 }
 
 func init() {
