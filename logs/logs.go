@@ -1,3 +1,6 @@
+// Log in JSON format for cloudwatch
+// All level entries are the same except for Debug
+// Level will be used for different parameters
 package logs
 
 import (
@@ -29,6 +32,8 @@ type logEntry struct {
 
 var Request any
 
+// For development debugging. Will not log on Production.
+// Requires `APP_ENV` equal `production`
 func Debug(note string, data any) {
 	if os.Getenv("APP_ENV") == PRODUCTION_ENV {
 		return
@@ -37,22 +42,27 @@ func Debug(note string, data any) {
 	logIt(DEBUG, note, data)
 }
 
+// Log used in event tracing like User clicked pay (CT like)
 func Trace(note string, data any) {
 	logIt(TRACE, note, data)
 }
 
+// Basic level logging
 func Info(note string, data any) {
 	logIt(INFO, note, data)
 }
 
+// Level for expected errors like ID not found
 func Warn(note string, data any) {
 	logIt(WARN, note, data)
 }
 
+// Level for "expected" crashes like can't connect to database
 func Error(note string, data any) {
 	logIt(ERROR, note, data)
 }
 
+// Level for system crashes
 func Fatal(note string, data any) {
 	logIt(FATAL, note, data)
 }
