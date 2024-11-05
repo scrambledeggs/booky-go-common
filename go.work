@@ -6,6 +6,7 @@ use (
 	./config
 	./encryption
 	./logger
+	./logs
 	./marshalling
 	./photo
 	./slicesfunc

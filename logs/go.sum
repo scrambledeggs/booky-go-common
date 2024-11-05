@@ -30,5 +30,3 @@ github.com/aws/smithy-go v1.22.0 h1:uunKnWlcoL3zO7q+gG2Pk53joueEOsnNB28QdMsmiMM=
 github.com/aws/smithy-go v1.22.0/go.mod h1:irrKGvNn1InZwb2d7fkIRNucdfwR8R+Ts3wxYa/cJHg=
 github.com/jmespath/go-jmespath v0.4.0 h1:BEgLn5cpjn8UN1mAw4NjwDrS35OdebyEtFe+9YPoQUg=
 github.com/jmespath/go-jmespath v0.4.0/go.mod h1:T8mJZnbsbmF+m6zOOFylbeCJqk5+pHWvzYPziyZiYoo=
-github.com/scrambledeggs/booky-go-common/assert v0.0.0-20241008122757-60ed59b25bbe h1:s113GkgL3N0JS0MkPTER9StVpTTwhnqcB/aIpyl27H4=
-github.com/scrambledeggs/booky-go-common/assert v0.0.0-20241008122757-60ed59b25bbe/go.mod h1:neA3usDYEgsdXETPKaTB/8kpOE6SKMU7Y2BlHLzmYSc=
