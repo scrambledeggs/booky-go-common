@@ -1,11 +1,12 @@
 module github.com/scrambledeggs/booky-go-common/logs
 
-go 1.21
+go 1.21.1
 
 require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/aws/aws-sdk-go-v2/config v1.28.1
 	github.com/aws/aws-sdk-go-v2/service/sns v1.33.3
+	github.com/scrambledeggs/booky-go-common/assert v0.0.0-20241008122757-60ed59b25bbe
 )
 
 require (
