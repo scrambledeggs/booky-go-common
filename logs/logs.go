@@ -4,9 +4,15 @@
 package logs
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"os"
+	"sync"
+
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sns"
+	"github.com/aws/aws-sdk-go/aws"
 )
 
 type Level string
@@ -19,6 +25,12 @@ const (
 	WARN  Level = "Warn"
 	ERROR Level = "Error"
 	FATAL Level = "Fatal"
+)
+
+type PublishFlag int
+
+const (
+	TO_SLACK PublishFlag = iota + 1
 )
 
 const PRODUCTION_ENV = "production"
@@ -98,7 +110,37 @@ func logIt(level Level, note string, data ...any) {
 		panic(err.Error())
 	}
 
-	log.Print(string(l))
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+
+		if len(data) <= 1 {
+			return
+		}
+
+		for i := 1; i < len(data); i++ {
+			if data[i].(PublishFlag) == TO_SLACK {
+				err := publishToSNS(string(l))
+
+				if err != nil {
+					panic(err.Error())
+				}
+
+				continue
+			}
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		log.Print(string(l))
+	}()
+
+	wg.Wait()
 }
 
 func jsonMarshal(le logEntry) ([]byte, error) {
@@ -107,6 +149,33 @@ func jsonMarshal(le logEntry) ([]byte, error) {
 	}
 
 	return json.Marshal(le)
+}
+
+func publishToSNS(message string) error {
+	ctx := context.TODO()
+	cfg, err := config.LoadDefaultConfig(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	snsClient := sns.NewFromConfig(cfg)
+
+	topicArn := os.Getenv("LOG_TO_SLACK_TOPIC_ARN")
+
+	_, err = snsClient.Publish(
+		ctx,
+		&sns.PublishInput{
+			TopicArn: aws.String(topicArn),
+			Message:  aws.String(message),
+		},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func init() {
