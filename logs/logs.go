@@ -123,11 +123,7 @@ func logIt(level Level, note string, data ...any) {
 
 		for i := 1; i < len(data); i++ {
 			if data[i].(PublishFlag) == TO_SLACK {
-				err := publishToSNS(string(l))
-
-				if err != nil {
-					panic(err.Error())
-				}
+				publishToSNS(string(l))
 
 				continue
 			}
@@ -151,17 +147,25 @@ func jsonMarshal(le logEntry) ([]byte, error) {
 	return json.Marshal(le)
 }
 
-func publishToSNS(message string) error {
+func publishToSNS(message string) {
+	topicArn := os.Getenv("LOG_TO_SLACK_TOPIC_ARN")
+
+	if topicArn == "" {
+		log.Print("LOG_TO_SLACK_TOPIC_ARN env is blank")
+
+		return
+	}
+
 	ctx := context.TODO()
 	cfg, err := config.LoadDefaultConfig(ctx)
 
 	if err != nil {
-		return err
+		log.Print("config.LoadDefaultConfig", err.Error())
+
+		return
 	}
 
 	snsClient := sns.NewFromConfig(cfg)
-
-	topicArn := os.Getenv("LOG_TO_SLACK_TOPIC_ARN")
 
 	_, err = snsClient.Publish(
 		ctx,
@@ -172,10 +176,8 @@ func publishToSNS(message string) error {
 	)
 
 	if err != nil {
-		return err
+		log.Print("snsClient.Publish", err.Error())
 	}
-
-	return nil
 }
 
 func init() {
