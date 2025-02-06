@@ -1,6 +1,6 @@
-# Authorizer Context Parser
+# API Gateway Helpers
 
-## User Parser
+## Pagination Info Parser
 
 Pass `request.RequestContext.Authorizer` from lambda request. This requires the header `x-user-token` to be included in the request.
 

@@ -12,4 +12,6 @@ use (
 	./marshalling
 	./photo
 	./slicesfunc
+	./apigatewayhelpers
+	./testhelpers
 )
