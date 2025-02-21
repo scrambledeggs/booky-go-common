@@ -6,7 +6,7 @@ import (
 	"github.com/jackc/pgx/pgtype"
 )
 
-func StringToPgTimestampInTimezone(datetime string, timezone string) (date pgtype.Timestamptz, err error) {
+func StringToPgTimestampInTimezone(datetime string, timezone string) (date pgtype.Timestamp, err error) {
 	utcTime, err := StringToPgTimestamp(datetime)
 	if err != nil {
 		return date, err

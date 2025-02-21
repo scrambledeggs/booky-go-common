@@ -1,6 +1,7 @@
-go 1.23.4
+go 1.23.5
 
 use (
+	./apigatewayhelpers
 	./apigatewayresponse
 	./assert
 	./authctxparser
@@ -10,8 +11,8 @@ use (
 	./logger
 	./logs
 	./marshalling
+	./payloadhelpers
 	./photo
 	./slicesfunc
-	./apigatewayhelpers
 	./testhelpers
 )

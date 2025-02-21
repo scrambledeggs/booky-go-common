@@ -6,7 +6,7 @@ import (
 	"github.com/jackc/pgx/pgtype"
 )
 
-func StringToPgTimestamp(datetime string) (date pgtype.Timestamptz, err error) {
+func StringToPgTimestamp(datetime string) (date pgtype.Timestamp, err error) {
 	formats := []string{
 		time.RFC3339, // "2006-01-02T15:04:05Z07:00"
 		"2006-01-02",

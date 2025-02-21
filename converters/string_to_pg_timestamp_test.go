@@ -56,7 +56,7 @@ func TestStringToPgTimestamp(t *testing.T) {
 			}
 
 			if !date.Time.Equal(tt.expected) {
-				t.Errorf("Test %s failed: expected %v, got %v", tt.name, tt.expected, date.Time)
+				t.Errorf("[%s] failed: expected %v, got %v", tt.name, tt.expected, date.Time)
 			}
 		})
 	}

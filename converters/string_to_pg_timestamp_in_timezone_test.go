@@ -53,7 +53,7 @@ func TestStringToPgTimestampInTimezone(t *testing.T) {
 
 			// Comparing in UTC for consistency
 			if !date.Time.UTC().Equal(tt.expected.UTC()) {
-				t.Errorf("Test %s failed: expected %v, got %v", tt.name, tt.expected.UTC(), date.Time.UTC())
+				t.Errorf("[%s] failed: expected %v, got %v", tt.name, tt.expected.UTC(), date.Time.UTC())
 			}
 		})
 	}
