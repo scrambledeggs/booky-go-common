@@ -39,7 +39,7 @@ func TestStringToTimeInTimezone(t *testing.T) {
 		{
 			name:     "Asia/Manila to UTC",
 			input:    "2025-02-20T15:04:05+08:00",
-			timezone: "Asia/Manila",
+			timezone: "UTC",
 			expected: time.Date(2025, 2, 20, 7, 4, 5, 0, time.UTC),
 		},
 	}
