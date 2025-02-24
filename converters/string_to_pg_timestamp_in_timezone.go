@@ -4,18 +4,16 @@ import (
 	"time"
 )
 
-func StringToTimeInTimezone(datetime string, timezone string) (date time.Time, err error) {
+func StringToTimeInTimezone(datetime, timezone string) (time.Time, error) {
 	utcTime, err := StringToTime(datetime)
 	if err != nil {
-		return date, err
+		return time.Time{}, err
 	}
 
 	location, err := time.LoadLocation(timezone)
 	if err != nil {
-		return date, err
+		return time.Time{}, err
 	}
 
-	date = utcTime.In(location)
-
-	return
+	return utcTime.In(location), nil
 }
