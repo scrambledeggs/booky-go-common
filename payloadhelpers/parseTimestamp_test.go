@@ -47,7 +47,7 @@ func TestParseTimestamp(t *testing.T) {
 			}
 
 			// Reformat for easy testing
-			result := parsed.Time.Format(time.RFC3339)
+			result := parsed.Format(time.RFC3339)
 
 			if result != tt.expected {
 				t.Errorf("[%s] failed: expected %v but got %v", tt.name, tt.expected, result)

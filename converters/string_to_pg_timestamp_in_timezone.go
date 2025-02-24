@@ -2,12 +2,10 @@ package converters
 
 import (
 	"time"
-
-	"github.com/jackc/pgx/pgtype"
 )
 
-func StringToPgTimestampInTimezone(datetime string, timezone string) (date pgtype.Timestamp, err error) {
-	utcTime, err := StringToPgTimestamp(datetime)
+func StringToTimeInTimezone(datetime string, timezone string) (date time.Time, err error) {
+	utcTime, err := StringToTime(datetime)
 	if err != nil {
 		return date, err
 	}
@@ -17,9 +15,7 @@ func StringToPgTimestampInTimezone(datetime string, timezone string) (date pgtyp
 		return date, err
 	}
 
-	localTime := utcTime.Time.In(location)
-
-	err = date.Scan(localTime)
+	date = utcTime.In(location)
 
 	return
 }

@@ -4,11 +4,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jackc/pgx/pgtype"
 	"github.com/scrambledeggs/booky-go-common/converters"
 )
 
-func ParseTimestamp(datetime string) (date pgtype.Timestamp, err error) {
+func ParseTimestamp(datetime string) (date time.Time, err error) {
 	formats := []string{
 		time.RFC3339, // "2006-01-02T15:04:05Z07:00"
 		"2006-01-02",
@@ -19,18 +18,16 @@ func ParseTimestamp(datetime string) (date pgtype.Timestamp, err error) {
 	}
 
 	isUTC := strings.HasSuffix(datetime, "Z")
-	var parsedTime time.Time
-
 	for _, format := range formats {
 		if isUTC {
-			parsedTime, err = time.Parse(format, datetime)
+			date, err = time.Parse(format, datetime)
 		} else {
 			loc, _ := time.LoadLocation("Asia/Manila")
-			parsedTime, err = time.ParseInLocation(format, datetime, loc)
+			date, err = time.ParseInLocation(format, datetime, loc)
 		}
 
 		if err == nil {
-			return converters.StringToPgTimestampInTimezone(parsedTime.Format(time.RFC3339), "Asia/Manila")
+			return converters.StringToTimeInTimezone(date.Format(time.RFC3339), "Asia/Manila")
 		}
 	}
 

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func TestStringToPgTimestampInTimezone(t *testing.T) {
+func TestStringToTimeInTimezone(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
@@ -46,20 +46,20 @@ func TestStringToPgTimestampInTimezone(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			date, err := StringToPgTimestampInTimezone(tt.input, tt.timezone)
+			date, err := StringToTimeInTimezone(tt.input, tt.timezone)
 			if err != nil {
-				t.Fatalf("unexpected error in test %s: %v", tt.name, err)
+				t.Fatalf("[%s] unexpected error: %v", tt.name, err)
 			}
 
 			// Comparing in UTC for consistency
-			if !date.Time.UTC().Equal(tt.expected.UTC()) {
-				t.Errorf("[%s] failed: expected %v, got %v", tt.name, tt.expected.UTC(), date.Time.UTC())
+			if !date.UTC().Equal(tt.expected.UTC()) {
+				t.Errorf("[%s] failed: expected %v, got %v", tt.name, tt.expected.UTC(), date.UTC())
 			}
 		})
 	}
 }
 
-func TestStringToLocalPgTimestamp_Invalid(t *testing.T) {
+func TestStringToTimeInTimezone_Invalid(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
@@ -94,7 +94,7 @@ func TestStringToLocalPgTimestamp_Invalid(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := StringToPgTimestampInTimezone(tt.input, tt.timezone)
+			_, err := StringToTimeInTimezone(tt.input, tt.timezone)
 			if err == nil {
 				t.Errorf("Test %s failed: expected error for input %s with timezone %s", tt.name, tt.input, tt.timezone)
 			}
