@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func TestStringToPgTimestamp(t *testing.T) {
+func TestStringToTime(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
@@ -50,19 +50,19 @@ func TestStringToPgTimestamp(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			date, err := StringToPgTimestamp(tt.input)
+			date, err := StringToTime(tt.input)
 			if err != nil {
-				t.Fatalf("unexpected error in test %s: %v", tt.name, err)
+				t.Fatalf("[%s] unexpected error: %v", tt.name, err)
 			}
 
-			if !date.Time.Equal(tt.expected) {
-				t.Errorf("[%s] failed: expected %v, got %v", tt.name, tt.expected, date.Time)
+			if !date.Equal(tt.expected) {
+				t.Errorf("[%s] failed: expected %v, got %v", tt.name, tt.expected, date)
 			}
 		})
 	}
 }
 
-func TestStringToPgTimestamp_Invalid(t *testing.T) {
+func TestStringToTime_Invalid(t *testing.T) {
 	tests := []struct {
 		name  string
 		input string
@@ -75,7 +75,7 @@ func TestStringToPgTimestamp_Invalid(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := StringToPgTimestamp(tt.input)
+			_, err := StringToTime(tt.input)
 			if err == nil {
 				t.Errorf("Test %s failed: expected error for input %s", tt.name, tt.input)
 			}
