@@ -18,7 +18,7 @@ type idempotencyRecord struct {
 var (
 	idempotencyStatusInProgress = "in_progress"
 	idempotencyStatusCompleted  = "completed"
-	idempotencyStatusExpired    = "expired"
+	// idempotencyStatusExpired    = "expired"
 )
 
 // GetKey returns the primary key in a format that can be sent to DynamoDB.

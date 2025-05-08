@@ -32,7 +32,6 @@ func (idbc idempotencyDBClient) Put(record idempotencyRecord) {
 
 func (idbc idempotencyDBClient) Get(query idempotencyRecord) *idempotencyRecord {
 	output, err := idbc.GetItem(idbc.context, &dynamodb.GetItemInput{Key: query.GetKey(), TableName: idbc.tableName})
-
 	if err != nil {
 		panic(err.Error())
 	}
