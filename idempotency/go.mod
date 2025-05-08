@@ -1,4 +1,4 @@
-module idempotency
+module github.com/scrambledeggs/booky-go-common/idempotency
 
 go 1.23.5
 
