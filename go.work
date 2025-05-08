@@ -8,6 +8,7 @@ use (
 	./config
 	./converters
 	./encryption
+	./idempotency
 	./logger
 	./logs
 	./marshalling
