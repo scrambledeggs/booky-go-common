@@ -8,8 +8,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.14
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.19.0
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.43.1
-	github.com/scrambledeggs/booky-go-common/apigatewayresponse v0.0.0-20250304041416-29ee7589e63d
-	github.com/scrambledeggs/booky-go-common/logs v0.0.0-20250304041416-29ee7589e63d
+	github.com/scrambledeggs/booky-go-common/apigatewayresponse v0.0.0-20250508204138-559c97b3dfb4
+	github.com/scrambledeggs/booky-go-common/logs v0.0.0-20250508204138-559c97b3dfb4
 )
 
 require (
