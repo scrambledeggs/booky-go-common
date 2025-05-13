@@ -103,8 +103,17 @@ func (ih idempotentHandler) handler(request events.APIGatewayProxyRequest) (even
 		}
 	}
 
-	expiry := time.Now().Add(ih.expiryDuration).Format(timeFormat)
-	record = &idempotencyRecord{IdempotencyKey: idempotencyKey, HttpMethodPath: httpMethodPath, Status: idempotencyStatusInProgress, Expiration: expiry, RequestHeaders: string(requestHeaders)}
+	expiry := time.Now().Add(ih.expiryDuration)
+	ttl := expiry.Add(7 * 24 * time.Hour).Unix()
+
+	record = &idempotencyRecord{
+		IdempotencyKey: idempotencyKey,
+		HttpMethodPath: httpMethodPath,
+		Expiration:     expiry.Format(timeFormat),
+		Ttl:            ttl,
+		RequestHeaders: string(requestHeaders),
+		Status:         idempotencyStatusInProgress,
+	}
 	dbClient.Put(*record)
 
 	resp, err := ih.lambdaHandler(request)

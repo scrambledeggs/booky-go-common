@@ -8,11 +8,12 @@ import (
 type idempotencyRecord struct {
 	IdempotencyKey string `dynamodbav:"idempotency_key"`
 	HttpMethodPath string `dynamodbav:"http_method#path"`
+	Error          string `dynamodbav:"error"`
+	Expiration     string `dynamodbav:"expiration"`
+	Ttl            int64  `dynamodbav:"ttl"`
+	RequestHeaders string `dynamodbav:"request_headers"`
 	Response       string `dynamodbav:"response"`
 	Status         string `dynamodbav:"status"`
-	Expiration     string `dynamodbav:"expiration"`
-	Error          string `dynamodbav:"error"`
-	RequestHeaders string `dynamodbav:"request_headers"`
 }
 
 var (

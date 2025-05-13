@@ -13,6 +13,7 @@ The idempotency package provides middleware for AWS Lambda functions that handle
 - DynamoDB-based persistence layer for tracking request status
 - Support for both AWS-hosted and local DynamoDB instances
 - Handles in-progress requests to prevent race conditions
+- Automatic cleanup of expired records using DynamoDB TTL
 
 ## Installation
 
@@ -67,12 +68,12 @@ func main() {
         DynamoDBUrl:    &dbUrl,
     }
 
-    // Wrap your handler with the idempotency middleware and custom options
+    // Wrap your handler with the configured idempotency middleware
     lambda.Start(idempotency.NewIdempotentHandlerWithOptions(handler, options))
 }
 ```
 
-## Configuration
+## Configuration Options
 
 The idempotency middleware can be configured with the following options:
 
@@ -90,10 +91,11 @@ The idempotency package requires a DynamoDB table with the following structure:
 - Sort Key: `http_method#path` (String)
 - Additional Attributes:
   - `response` (String): Serialized API response
-  - `status` (String): Request status (in_progress, completed, expired)
+  - `status` (String): Request status (in_progress, completed)
   - `expiration` (String): Expiration timestamp
   - `error` (String): Error message if applicable
   - `request_headers` (String): Original request headers
+  - `ttl` (Number): Time-to-live timestamp for automatic cleanup
 
 ### CloudFormation Template
 
@@ -101,7 +103,7 @@ You can use the following CloudFormation template in your `template.yaml` file t
 
 ```yaml
 Resources:
-  IdempotencyDBTable:
+  IdempotencyTable:
     Type: AWS::DynamoDB::Table
     Properties:
       KeySchema:
@@ -118,7 +120,7 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
       TimeToLiveSpecification:
-        AttributeName: "expiration"
+        AttributeName: "ttl"
         Enabled: true
 
   WriteCapacityScalableTarget:
@@ -126,7 +128,7 @@ Resources:
     Properties:
       MaxCapacity: 15
       MinCapacity: 5
-      ResourceId: !Join ["/", ["table", !Ref IdempotencyDBTable]]
+      ResourceId: !Join ["/", ["table", !Ref IdempotencyTable]]
       RoleARN: !GetAtt ScalingRole.Arn
       ScalableDimension: dynamodb:table:WriteCapacityUnits
       ServiceNamespace: dynamodb
@@ -163,63 +165,81 @@ Resources:
   IdempotencyDBAccessPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      PolicyDocument:
+    PolicyDocument:
+      Version: '2012-10-17'
+      Statement:
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+          Resource: !GetAtt IdempotencyDBTable.Arn
+
+  YourLambdaFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
           - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
             Action:
-              - "dynamodb:DescribeTable"
-              - "dynamodb:UpdateTable"
-              - "dynamodb:GetItem"
-              - "dynamodb:PutItem"
-              - "dynamodb:DeleteItem"
-              - "dynamodb:UpdateItem"
-            Resource: !GetAtt IdempotencyDBTable.Arn
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"  # For CloudWatch Logs
+        - "arn:aws:iam::aws:policy/CloudFrontFullAccess"  # For CloudFront access
+      Policies:
+        - PolicyName: IdempotencyDynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt IdempotencyDBTable.Arn
+        - PolicyName: SNSPublishAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Ref UserSubscribedTopic
 
   YourLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
       # ... other properties
-      Environment:
-        Variables:
-          IDEMPOTENCY_DB_TABLE: !Ref IdempotencyDBTable
+      Role: !GetAtt SubscribeFunctionRole.Arn
 ```
-
-This template includes:
-
-1. **Auto-scaling for DynamoDB**: Automatically scales write capacity between 5-15 units based on a 50% utilization target
-2. **IAM Roles and Policies**: Proper permissions for both the scaling service and your Lambda function
-3. **Scaling Configuration**: Cooldown periods to prevent rapid scaling changes
-
-For additional production optimizations, consider adding:
-
-```yaml
-  IdempotencyDBTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      # ... existing properties
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: true
-      BillingMode: PROVISIONED  # Or PAY_PER_REQUEST for on-demand capacity
-```
-
-## Environment Variables
-
-The following environment variables are used by the idempotency package:
-
-- `IDEMPOTENCY_DB_TABLE`: DynamoDB table name (required)
-- `AMZ_REGION`: AWS region (required)
-
-> **Note:** The idempotency package uses IAM roles for AWS authentication. Make sure your Lambda function has the appropriate IAM role with permissions to access DynamoDB as shown in the CloudFormation template example.
 
 ## How It Works
 
-1. When a request is received, the middleware calculates an idempotency key based on the request body
-2. It checks if a record with the same key exists in DynamoDB
-3. If a record exists and is completed, it returns the stored response
-4. If a record exists and is in progress, it returns a 425 Too Early status
-5. If no record exists or the record is expired, it creates a new record, processes the request, and stores the response
+1. When a request is received, the middleware generates an idempotency key from the request body.
+2. It checks if a record with this key already exists in DynamoDB.
+3. If a record exists and is still valid (not expired):
+   - If the status is "completed", it returns the cached response.
+   - If the status is "in_progress", it returns a 425 Too Early error.
+4. If no record exists or the existing record is expired, it:
+   - Creates a new record with status "in_progress".
+   - Calls the handler function.
+   - Updates the record with the response and status "completed".
+   - Sets a TTL value for automatic cleanup (7 days after expiration).
+5. DynamoDB automatically removes expired records based on the TTL attribute.
 
 ## Error Handling
 
-The middleware preserves both successful responses and errors. If the original request resulted in an error, the same error will be returned for duplicate requests.
+If the original handler returns an error, the middleware will:
+1. Cache the error along with the response.
+2. Return the same error for identical requests within the expiry period.
+
+This ensures that error responses are also idempotent.
+
+## TODO
+
+- Add comprehensive benchmarks
+- Add integration tests with DynamoDB or LocalStack
