@@ -73,6 +73,28 @@ func main() {
 }
 ```
 
+### Adapter Function
+
+if your handler is context-based, you need to create an adapter function
+```go
+func main() {
+    // Configure custom options
+    duration := 24 * time.Hour
+
+    // Create an adapter function that wraps your context-based handler
+    adapterHandler := func(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+        return handler(context.Background(), request)
+    }
+
+    options := idempotency.IdempotentHandlerOptions{
+        ExpiryDuration: &duration,
+    }
+
+    // Wrap your handler with the configured idempotency middleware
+    lambda.Start(idempotency.NewIdempotentHandlerWithOptions(handler, options))
+}
+```
+
 ## Configuration Options
 
 The idempotency middleware can be configured with the following options:
@@ -96,6 +118,8 @@ The idempotency package requires a DynamoDB table with the following structure:
   - `error` (String): Error message if applicable
   - `request_headers` (String): Original request headers
   - `ttl` (Number): Time-to-live timestamp for automatic cleanup
+- Note:
+  - `ttl vs expiration`: ttl is the time-to-live timestamp for automatic cleanup, expiration is the idempotency time duration
 
 ### CloudFormation Template
 
@@ -107,73 +131,19 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       KeySchema:
-        - AttributeName: "idempotency_key"
-          KeyType: "HASH"
-        - AttributeName: "http_method#path"
-          KeyType: "RANGE"
+        - AttributeName: idempotency_key
+          KeyType: HASH
+        - AttributeName: http_method#path
+          KeyType: RANGE
       AttributeDefinitions:
-        - AttributeName: "idempotency_key"
-          AttributeType: "S"
-        - AttributeName: "http_method#path"
-          AttributeType: "S"
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
+        - AttributeName: idempotency_key
+          AttributeType: S
+        - AttributeName: http_method#path
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
       TimeToLiveSpecification:
-        AttributeName: "ttl"
+        AttributeName: ttl
         Enabled: true
-
-  WriteCapacityScalableTarget:
-    Type: AWS::ApplicationAutoScaling::ScalableTarget
-    Properties:
-      MaxCapacity: 15
-      MinCapacity: 5
-      ResourceId: !Join ["/", ["table", !Ref IdempotencyTable]]
-      RoleARN: !GetAtt ScalingRole.Arn
-      ScalableDimension: dynamodb:table:WriteCapacityUnits
-      ServiceNamespace: dynamodb
-
-  ScalingRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - application-autoscaling.amazonaws.com
-            Action:
-              - "sts:AssumeRole"
-      Path: "/"
-      ManagedPolicyArns:
-        - !Ref IdempotencyDBAccessPolicy
-
-  WriteScalingPolicy:
-    Type: AWS::ApplicationAutoScaling::ScalingPolicy
-    Properties:
-      PolicyName: WriteAutoScalingPolicy
-      PolicyType: TargetTrackingScaling
-      ScalingTargetId: !Ref WriteCapacityScalableTarget
-      TargetTrackingScalingPolicyConfiguration:
-        TargetValue: 50.0
-        ScaleInCooldown: 60
-        ScaleOutCooldown: 60
-        PredefinedMetricSpecification:
-          PredefinedMetricType: DynamoDBWriteCapacityUtilization
-
-  IdempotencyDBAccessPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-    PolicyDocument:
-      Version: '2012-10-17'
-      Statement:
-        - Effect: Allow
-          Action:
-            - dynamodb:GetItem
-            - dynamodb:PutItem
-            - dynamodb:UpdateItem
-          Resource: !GetAtt IdempotencyDBTable.Arn
 
   YourLambdaFunctionRole:
     Type: AWS::IAM::Role
@@ -188,8 +158,7 @@ Resources:
             Action:
               - "sts:AssumeRole"
       ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"  # For CloudWatch Logs
-        - "arn:aws:iam::aws:policy/CloudFrontFullAccess"  # For CloudFront access
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
       Policies:
         - PolicyName: IdempotencyDynamoDBAccess
           PolicyDocument:
@@ -200,21 +169,22 @@ Resources:
                   - dynamodb:GetItem
                   - dynamodb:PutItem
                   - dynamodb:UpdateItem
-                Resource: !GetAtt IdempotencyDBTable.Arn
-        - PolicyName: SNSPublishAccess
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - sns:Publish
-                Resource: !Ref UserSubscribedTopic
+                Resource: !GetAtt IdempotencyTable.Arn
+        # Add other policies here
+        # - PolicyName: SNSPublishAccess
+        #   PolicyDocument:
+        #     Version: '2012-10-17'
+        #     Statement:
+        #       - Effect: Allow
+        #         Action:
+        #           - sns:Publish
+        #         Resource: !Ref SomeTopic
 
   YourLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
       # ... other properties
-      Role: !GetAtt SubscribeFunctionRole.Arn
+      Role: !GetAtt YourLambdaFunctionRole.Arn
 ```
 
 ## How It Works
