@@ -27,12 +27,13 @@ import "github.com/scrambledeggs/booky-go-common/idempotency"
 
 ```go
 import (
+    "context"
     "github.com/aws/aws-lambda-go/events"
     "github.com/aws/aws-lambda-go/lambda"
     "github.com/scrambledeggs/booky-go-common/idempotency"
 )
 
-func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
     // Your handler logic here
 }
 
@@ -46,13 +47,14 @@ func main() {
 
 ```go
 import (
+    "context"
     "time"
     "github.com/aws/aws-lambda-go/events"
     "github.com/aws/aws-lambda-go/lambda"
     "github.com/scrambledeggs/booky-go-common/idempotency"
 )
 
-func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
     // Your handler logic here
 }
 
@@ -66,28 +68,6 @@ func main() {
         ExpiryDuration: &duration,
         TableName:      &tableName,
         DynamoDBUrl:    &dbUrl,
-    }
-
-    // Wrap your handler with the configured idempotency middleware
-    lambda.Start(idempotency.NewIdempotentHandlerWithOptions(handler, options))
-}
-```
-
-### Adapter Function
-
-if your handler is context-based, you need to create an adapter function
-```go
-func main() {
-    // Configure custom options
-    duration := 24 * time.Hour
-
-    // Create an adapter function that wraps your context-based handler
-    adapterHandler := func(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-        return handler(context.Background(), request)
-    }
-
-    options := idempotency.IdempotentHandlerOptions{
-        ExpiryDuration: &duration,
     }
 
     // Wrap your handler with the configured idempotency middleware

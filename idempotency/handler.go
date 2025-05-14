@@ -22,7 +22,7 @@ var (
 	defaultDynamoDBTableName  = os.Getenv("IDEMPOTENCY_DB_TABLE")
 )
 
-type lambdaHandlerFunc func(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
+type lambdaHandlerFunc func(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
 
 type IdempotentHandlerOptions struct {
 	DynamoDBUrl    *string
@@ -63,7 +63,7 @@ func NewIdempotentHandlerWithOptions(handler lambdaHandlerFunc, options Idempote
 	return idempotentHandler{lambdaHandler: handler, tableName: tableName, dynamoDBUrl: options.DynamoDBUrl, expiryDuration: *expiryDuration}.handler
 }
 
-func (ih idempotentHandler) handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (ih idempotentHandler) handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	idempotencyKey := mapToHash(request.Body)
 	httpMethodPath := fmt.Sprintf("%s#%s", request.HTTPMethod, request.Path)
 	requestHeaders, _ := json.Marshal(request.Headers)
@@ -73,9 +73,9 @@ func (ih idempotentHandler) handler(request events.APIGatewayProxyRequest) (even
 		"body": request.Body,
 	})
 
-	dbClient := newIdempotencyDBClient(context.TODO(), ih.tableName)
+	dbClient := newIdempotencyDBClient(ctx, ih.tableName)
 	if ih.dynamoDBUrl != nil {
-		dbClient = newIdempotencyDBClientWithUrl(context.TODO(), ih.tableName, *ih.dynamoDBUrl)
+		dbClient = newIdempotencyDBClientWithUrl(ctx, ih.tableName, *ih.dynamoDBUrl)
 	}
 
 	record := dbClient.Get(idempotencyRecord{IdempotencyKey: idempotencyKey, HttpMethodPath: httpMethodPath})
@@ -116,7 +116,7 @@ func (ih idempotentHandler) handler(request events.APIGatewayProxyRequest) (even
 	}
 	dbClient.Put(*record)
 
-	resp, err := ih.lambdaHandler(request)
+	resp, err := ih.lambdaHandler(ctx, request)
 	r, _ := json.Marshal(resp)
 
 	record.Response = string(r)
