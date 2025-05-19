@@ -28,13 +28,16 @@ type IdempotentHandlerOptions struct {
 	DynamoDBUrl    *string
 	TableName      *string
 	ExpiryDuration *time.Duration
+
+	HeadersToIncludeInKey []string
 }
 
 type idempotentHandler struct {
-	lambdaHandler  lambdaHandlerFunc
-	tableName      string
-	dynamoDBUrl    *string
-	expiryDuration time.Duration
+	lambdaHandler         lambdaHandlerFunc
+	tableName             string
+	dynamoDBUrl           *string
+	expiryDuration        time.Duration
+	headersToIncludeInKey []string
 }
 
 // NewIdempotentHandler attaches a middleware to a lambda handler with default DynamoDB persistence store to enable idempotency in each response
@@ -60,18 +63,19 @@ func NewIdempotentHandlerWithOptions(handler lambdaHandlerFunc, options Idempote
 		tableName = *options.TableName
 	}
 
-	return idempotentHandler{lambdaHandler: handler, tableName: tableName, dynamoDBUrl: options.DynamoDBUrl, expiryDuration: *expiryDuration}.handler
+	return idempotentHandler{
+		lambdaHandler:         handler,
+		tableName:             tableName,
+		dynamoDBUrl:           options.DynamoDBUrl,
+		expiryDuration:        *expiryDuration,
+		headersToIncludeInKey: options.HeadersToIncludeInKey,
+	}.handler
 }
 
 func (ih idempotentHandler) handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	idempotencyKey := mapToHash(request.Body)
+	idempotencyKey := generateIdempotencyKey(request.Body, request.Headers, ih.headersToIncludeInKey)
 	httpMethodPath := fmt.Sprintf("%s#%s", request.HTTPMethod, request.Path)
 	requestHeaders, _ := json.Marshal(request.Headers)
-
-	logs.Print("data", map[string]any{
-		"key":  idempotencyKey,
-		"body": request.Body,
-	})
 
 	dbClient := newIdempotencyDBClient(ctx, ih.tableName)
 	if ih.dynamoDBUrl != nil {
@@ -128,6 +132,23 @@ func (ih idempotentHandler) handler(ctx context.Context, request events.APIGatew
 
 	logs.Print("returned NON IDEMPOTENT response", nil)
 	return resp, err
+}
+
+func generateIdempotencyKey(body string, headers map[string]string, includeHeaders []string) string {
+	relevantHeaders := map[string]string{}
+	for _, key := range includeHeaders {
+		if val, ok := headers[key]; ok {
+			relevantHeaders[key] = val
+		}
+	}
+
+	combined := map[string]interface{}{
+		"body":    body,
+		"headers": relevantHeaders,
+	}
+
+	data, _ := json.Marshal(combined)
+	return mapToHash(string(data))
 }
 
 func mapToHash(s string) string {

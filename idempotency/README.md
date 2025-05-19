@@ -8,7 +8,7 @@ The idempotency package provides middleware for AWS Lambda functions that handle
 
 ## Features
 
-- Automatic detection of duplicate requests based on request body
+- Automatic detection of duplicate requests based on request body and configurable headers
 - Configurable expiration time for idempotency records
 - DynamoDB-based persistence layer for tracking request status
 - Support for both AWS-hosted and local DynamoDB instances
@@ -65,9 +65,10 @@ func main() {
     dbUrl := "http://localhost:8000" // For local development
 
     options := idempotency.IdempotentHandlerOptions{
-        ExpiryDuration: &duration,
-        TableName:      &tableName,
-        DynamoDBUrl:    &dbUrl,
+        ExpiryDuration:                   &duration,
+        TableName:                        &tableName,
+        DynamoDBUrl:                      &dbUrl,
+        HeadersToIncludeInKey:            []string{"Authorization", "X-Request-ID"},
     }
 
     // Wrap your handler with the configured idempotency middleware
@@ -84,6 +85,7 @@ The idempotency middleware can be configured with the following options:
 | `TableName` | DynamoDB table name | Value of `IDEMPOTENCY_DB_TABLE` environment variable |
 | `DynamoDBUrl` | URL for DynamoDB instance | AWS DynamoDB service |
 | `ExpiryDuration` | How long to store idempotency records | 1 hour |
+| `HeadersToIncludeInKey` | List of HTTP header keys to include in the idempotency key hash (along with the request body) | [] (body only) |
 
 ## DynamoDB Table Structure
 
@@ -169,7 +171,7 @@ Resources:
 
 ## How It Works
 
-1. When a request is received, the middleware generates an idempotency key from the request body.
+1. When a request is received, the middleware generates an idempotency key from the request body and optionally specified headers.
 2. It checks if a record with this key already exists in DynamoDB.
 3. If a record exists and is still valid (not expired):
    - If the status is "completed", it returns the cached response.
@@ -181,6 +183,10 @@ Resources:
    - Sets a TTL value for automatic cleanup (7 days after expiration).
 5. DynamoDB automatically removes expired records based on the TTL attribute.
 
+### Header Inclusion
+
+By default, the idempotency key is generated from the request body.
+
 ## Error Handling
 
 If the original handler returns an error, the middleware will:
@@ -188,6 +194,16 @@ If the original handler returns an error, the middleware will:
 2. Return the same error for identical requests within the expiry period.
 
 This ensures that error responses are also idempotent.
+
+## Best Practices for Header Inclusion
+
+To improve idempotency reliability in high-concurrency environments:
+
+- Include headers like `Authorization` or `X-Request-ID` when retries may contain the same body but represent different logical requests.
+- Avoid using headers with volatile values (e.g., `User-Agent`, timestamps) unless necessary.
+- If unsure, start without headers and monitor for edge cases.
+
+This feature gives you the flexibility to strike the right balance for your use case.
 
 ## TODO
 
