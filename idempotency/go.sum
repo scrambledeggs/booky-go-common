@@ -50,7 +50,6 @@ github.com/scrambledeggs/booky-go-common/assert v0.0.0-20240712043126-afd72089aa
 github.com/scrambledeggs/booky-go-common/assert v0.0.0-20240712043126-afd72089aa6b/go.mod h1:neA3usDYEgsdXETPKaTB/8kpOE6SKMU7Y2BlHLzmYSc=
 github.com/scrambledeggs/booky-go-common/logs v0.0.0-20250508204138-559c97b3dfb4 h1:N5ytmRgffIFYfCVqlNfb43B3uFLjH3/HIKau/tNtstE=
 github.com/scrambledeggs/booky-go-common/logs v0.0.0-20250508204138-559c97b3dfb4/go.mod h1:IHU3xMX+PhSFb1/wbaJ9R3FhtB1JtKEOHpHBjGcTdwc=
-github.com/stretchr/testify v1.7.2 h1:4jaiDzPyXQvSd7D0EjG45355tLlV3VOECpq10pLC+8s=
-github.com/stretchr/testify v1.7.2/go.mod h1:R6va5+xMeoiuVRoj+gSkQ7d3FALtqAAGI1FQKckRals=
+github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=

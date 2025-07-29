@@ -5,6 +5,7 @@ use (
 	./apigatewayresponse
 	./assert
 	./authctxparser
+	./cloudfronthelpers
 	./config
 	./converters
 	./encryption
