@@ -1,4 +1,4 @@
-package cloudfronthelpers
+package cloudfront
 
 import (
 	"os"

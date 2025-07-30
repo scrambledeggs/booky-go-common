@@ -1,4 +1,4 @@
-module github.com/scrambledeggs/booky-go-common/cloudfronthelpers
+module github.com/scrambledeggs/booky-go-common/cloudfront
 
 go 1.23.4
 
