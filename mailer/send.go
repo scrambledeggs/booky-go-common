@@ -12,7 +12,7 @@ import (
 )
 
 var API_KEY = os.Getenv("API_KEY")
-var MESSAGE_HOST = os.Getenv("MESSAGE_HOST")
+var MESSAGES_HOST = os.Getenv("MESSAGES_HOST")
 
 func Send(to string, from string, body string, subject string) error {
 	payload := map[string]string{
