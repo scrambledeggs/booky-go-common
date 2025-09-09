@@ -20,9 +20,8 @@ func main() {
 	}
 
 	user := mailer.User{
-		FirstName: "Mervyl",
-		LastName:  "Canlas",
-		Email:     "mervyl@phonebooky.com",
+		Name:  "Mervyl Canlas",
+		Email: "mervyl@phonebooky.com",
 	}
 
 	styleSheets := []mailer.File{
@@ -33,14 +32,14 @@ func main() {
 		styleSheets = []mailer.File{{Fs: scssFS, FileName: "templates/scss/welcome-email.scss"}}
 	}
 
-	const title = "Welcome To Booky"
+	const title = "Welcome To Booky!"
 
 	config := mailer.RenderConfig{
 		Templates:   templates,
 		StyleSheets: styleSheets,
 		Context: map[string]interface{}{
 			"title":           title,
-			"first_name":      user.FirstName,
+			"name":            user.Name,
 			"unsubscribe_url": "https://booky.ph/unsubscribe",
 		},
 		ImageBaseUrl: "https://np-sih.booky.ph",

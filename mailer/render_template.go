@@ -40,9 +40,8 @@ type RenderConfig struct {
 }
 
 type User struct {
-	FirstName string
-	LastName  string
-	Email     string
+	Name  string
+	Email string
 }
 
 func RenderTemplate(config RenderConfig) (string, error) {
