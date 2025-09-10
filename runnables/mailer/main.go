@@ -16,7 +16,9 @@ var scssFS embed.FS
 func main() {
 	variant := ""
 	templates := []mailer.File{
+		{Fs: templateFS, FileName: "templates/header.hbs"},
 		{Fs: templateFS, FileName: "templates/welcome.hbs"},
+		{Fs: templateFS, FileName: "templates/footer.hbs"},
 	}
 
 	user := mailer.User{
@@ -25,6 +27,7 @@ func main() {
 	}
 
 	styleSheets := []mailer.File{
+		{Fs: templateFS, FileName: "templates/styles/base.css"},
 		{Fs: templateFS, FileName: "templates/styles/welcome-email.css"},
 	}
 

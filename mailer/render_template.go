@@ -18,12 +18,6 @@ import (
 	"github.com/vanng822/go-premailer/premailer"
 )
 
-//go:embed templates/*
-var templateFS embed.FS
-
-//go:embed templates/scss/*.scss
-var scssFS embed.FS
-
 type File struct {
 	Fs       embed.FS
 	FileName string
@@ -45,18 +39,8 @@ type User struct {
 }
 
 func RenderTemplate(config RenderConfig) (string, error) {
-	headerContent, err := templateFS.ReadFile("templates/header.hbs")
-	if err != nil {
-		return "", err
-	}
+	templateString := ""
 
-	footerContent, err := templateFS.ReadFile("templates/footer.hbs")
-	if err != nil {
-		return "", err
-	}
-
-	templateString := string(headerContent)
-	// join templates in order
 	for _, template := range config.Templates {
 		templateContent, err := template.Fs.ReadFile(template.FileName)
 		if err != nil {
@@ -64,9 +48,9 @@ func RenderTemplate(config RenderConfig) (string, error) {
 		}
 		templateString += string(templateContent)
 	}
-	templateString += string(footerContent)
 
 	var styleString string
+	var err error
 
 	if config.CompileType == "scss" {
 		// TODO: use godartsass, extract to function
@@ -76,7 +60,7 @@ func RenderTemplate(config RenderConfig) (string, error) {
 
 		var files []fs.DirEntry
 
-		files, err = config.ScssFs.ReadDir(config.ScssDir)
+		files, err := config.ScssFs.ReadDir(config.ScssDir)
 		if err != nil {
 			return "", err
 		}
@@ -96,44 +80,30 @@ func RenderTemplate(config RenderConfig) (string, error) {
 			}
 
 			os.WriteFile(filepath.Join(tempDir, file.Name()), fileContent, 0644)
-			// logs.Print("copied scss file", filepath.Join(tempDir, file.Name()))
 		}
 
 		for _, styleSheet := range config.StyleSheets {
 			fileName := strings.ReplaceAll(styleSheet.FileName, config.ScssDir, tempDir)
 			outputFile := fileName + ".css"
 			cmd := exec.Command(sassPath, fileName, outputFile, "--style=compressed", "--no-source-map")
-
-			var output []byte
-
-			output, err = cmd.CombinedOutput()
+			output, err := cmd.CombinedOutput()
 			if err != nil {
 				fmt.Println("scss error", string(output))
 				return "", err
 			}
-
 			cssContent, err := os.ReadFile(outputFile)
 			if err != nil {
 				fmt.Println("scss read error", string(output))
 				return "", err
 			}
-
 			styleString += string(cssContent)
-			// fmt.Println("styleString", styleString)
 		}
 	} else {
 		styleString, err = extractStyleSheets(config.StyleSheets)
+
 		if err != nil {
 			return "", err
 		}
-
-		baseCssContent, err := templateFS.ReadFile("templates/styles/base.css")
-		if err != nil {
-			return "", err
-		}
-		styleString = string(baseCssContent) + styleString
-
-		// logs.Print("css styleString", styleString)
 	}
 
 	mediaQueriesString := extractMediaQueries(styleString)

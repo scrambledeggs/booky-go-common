@@ -7,8 +7,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-
-	"github.com/scrambledeggs/booky-go-common/logs"
 )
 
 var API_KEY = os.Getenv("API_KEY")
@@ -23,21 +21,18 @@ func Send(to string, from string, body string, subject string) error {
 		"message":  body,
 	}
 
-	// Marshal the payload to JSON
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("error marshaling JSON: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", MESSAGE_HOST+"/messages/api/email/send/v1", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", MESSAGES_HOST+"/messages/api/email/send/v1", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("error in NewRequest: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("x-api-key", API_KEY)
-
-	logs.Print("req", MESSAGE_HOST+"/messages/api/email/send/v1")
 
 	client := &http.Client{}
 
