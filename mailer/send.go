@@ -7,26 +7,39 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/scrambledeggs/booky-go-common/logs"
 )
 
 var API_KEY = os.Getenv("API_KEY")
 var MESSAGES_HOST = os.Getenv("MESSAGES_HOST")
 
-func Send(to string, from string, body string, subject string) error {
-	payload := map[string]string{
-		"provider": "aws_ses",
-		"to":       to,
-		"from":     from,
-		"subject":  subject,
-		"message":  body,
-	}
+type SendConfig struct {
+	Recipient string
+	Sender    string
+	Body      string
+	Subject   string
+}
 
-	jsonData, err := json.Marshal(payload)
+func Send(config SendConfig) error {
+	jsonData, err := json.Marshal(map[string]string{
+		"provider": "aws_ses",
+		"to":       config.Recipient,
+		"from":     config.Sender,
+		"subject":  config.Subject,
+		"message":  config.Body,
+	})
+
 	if err != nil {
 		return fmt.Errorf("error marshaling JSON: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", MESSAGES_HOST+"/messages/api/email/send/v1", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest(
+		"POST",
+		MESSAGES_HOST+"/messages/api/email/send/v1",
+		bytes.NewBuffer(jsonData),
+	)
+
 	if err != nil {
 		return fmt.Errorf("error in NewRequest: %w", err)
 	}
@@ -37,6 +50,7 @@ func Send(to string, from string, body string, subject string) error {
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
+
 	if err != nil {
 		return fmt.Errorf("error in Do: %w", err)
 	}
@@ -44,6 +58,7 @@ func Send(to string, from string, body string, subject string) error {
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(resp.Body)
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("error making request: %s", string(respBody))
 	}
@@ -51,6 +66,8 @@ func Send(to string, from string, body string, subject string) error {
 	if err != nil {
 		return fmt.Errorf("error reading response: %w", err)
 	}
+
+	logs.Print("Email sent successfully")
 
 	return nil
 }

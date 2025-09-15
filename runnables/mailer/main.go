@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"os"
 
 	"github.com/scrambledeggs/booky-go-common/logs"
 	"github.com/scrambledeggs/booky-go-common/mailer"
@@ -10,58 +11,49 @@ import (
 //go:embed templates/*
 var templateFS embed.FS
 
-//go:embed templates/scss/*.scss
-var scssFS embed.FS
+var IMAGE_BASE_URL = os.Getenv("IMAGE_BASE_URL")
+
+type User struct {
+	Name  string
+	Email string
+}
 
 func main() {
-	variant := ""
-	templates := []mailer.File{
-		{Fs: templateFS, FileName: "templates/header.hbs"},
-		{Fs: templateFS, FileName: "templates/welcome.hbs"},
-		{Fs: templateFS, FileName: "templates/footer.hbs"},
-	}
-
-	user := mailer.User{
+	user := User{
 		Name:  "Mervyl Canlas",
 		Email: "mervyl@phonebooky.com",
 	}
 
-	styleSheets := []mailer.File{
-		{Fs: templateFS, FileName: "templates/styles/base.css"},
-		{Fs: templateFS, FileName: "templates/styles/welcome-email.css"},
-	}
+	title := "Welcome to Booky!"
 
-	if variant == "scss" {
-		styleSheets = []mailer.File{{Fs: scssFS, FileName: "templates/scss/welcome-email.scss"}}
-	}
-
-	const title = "Welcome To Booky!"
-
-	config := mailer.RenderConfig{
-		Templates:   templates,
-		StyleSheets: styleSheets,
-		Context: map[string]interface{}{
-			"title":           title,
-			"name":            user.Name,
-			"unsubscribe_url": "https://booky.ph/unsubscribe",
+	html, err := mailer.RenderTemplate(mailer.RenderConfig{
+		ImageBaseUrl:        IMAGE_BASE_URL,
+		UseDefaultTemplates: true,
+		Templates: []mailer.File{
+			{Fs: templateFS, FileName: "templates/welcome.hbs"},
 		},
-		ImageBaseUrl: "https://np-sih.booky.ph",
-		CompileType:  variant,
-	}
+		StyleSheets: []mailer.File{
+			{Fs: templateFS, FileName: "templates/styles/welcome-email.css"},
+		},
+		Context: map[string]interface{}{
+			"title": title,
+			"name":  user.Name,
+		},
+	})
 
-	if variant == "scss" {
-		config.ScssFs = scssFS
-		config.ScssDir = "templates/scss"
-	}
-
-	html, err := mailer.RenderTemplate(config)
 	if err != nil {
-		logs.Error("RenderTemplates", err.Error())
+		logs.Error("RenderTemplate", err.Error())
 
 		return
 	}
 
-	err = mailer.Send(user.Email, "no-reply@phonebooky.com", html, title)
+	err = mailer.Send(mailer.SendConfig{
+		Sender:    "no-reply@booky.ph",
+		Recipient: user.Email,
+		Body:      html,
+		Subject:   title,
+	})
+
 	if err != nil {
 		logs.Error("Send", err.Error())
 

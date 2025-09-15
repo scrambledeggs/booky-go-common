@@ -4,12 +4,7 @@ import (
 	"embed"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
-	"io/fs"
 	"net/url"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -24,91 +19,34 @@ type File struct {
 }
 
 type RenderConfig struct {
-	Templates    []File
-	Context      map[string]interface{}
-	StyleSheets  []File
-	ImageBaseUrl string
-	CompileType  string
-	ScssFs       embed.FS
-	ScssDir      string
+	Context             map[string]interface{}
+	Templates           []File
+	StyleSheets         []File
+	ImageBaseUrl        string
+	CompileType         string
+	UseDefaultTemplates bool
 }
 
-type User struct {
-	Name  string
-	Email string
-}
+//go:embed templates/*
+var templateFS embed.FS
 
 func RenderTemplate(config RenderConfig) (string, error) {
-	templateString := ""
+	templateString, err := extractTemplates(config)
 
-	for _, template := range config.Templates {
-		templateContent, err := template.Fs.ReadFile(template.FileName)
-		if err != nil {
-			return "", err
-		}
-		templateString += string(templateContent)
+	if err != nil {
+		return "", err
 	}
 
-	var styleString string
-	var err error
+	styleString, err := extractStyleSheets(config)
 
-	if config.CompileType == "scss" {
-		// TODO: use godartsass, extract to function
-		sassPath := "/opt/bin/sass" // from lambda layer
-		tempDir := "/tmp/" + config.ScssDir
-		os.MkdirAll(tempDir, 0755)
-
-		var files []fs.DirEntry
-
-		files, err := config.ScssFs.ReadDir(config.ScssDir)
-		if err != nil {
-			return "", err
-		}
-
-		// copy scss files to tempDir
-		for _, file := range files {
-			if file.IsDir() {
-				// TODO recursive copy?
-				continue
-			}
-
-			var fileContent []byte
-
-			fileContent, err = config.ScssFs.ReadFile(filepath.Join(config.ScssDir, file.Name()))
-			if err != nil {
-				return "", err
-			}
-
-			os.WriteFile(filepath.Join(tempDir, file.Name()), fileContent, 0644)
-		}
-
-		for _, styleSheet := range config.StyleSheets {
-			fileName := strings.ReplaceAll(styleSheet.FileName, config.ScssDir, tempDir)
-			outputFile := fileName + ".css"
-			cmd := exec.Command(sassPath, fileName, outputFile, "--style=compressed", "--no-source-map")
-			output, err := cmd.CombinedOutput()
-			if err != nil {
-				fmt.Println("scss error", string(output))
-				return "", err
-			}
-			cssContent, err := os.ReadFile(outputFile)
-			if err != nil {
-				fmt.Println("scss read error", string(output))
-				return "", err
-			}
-			styleString += string(cssContent)
-		}
-	} else {
-		styleString, err = extractStyleSheets(config.StyleSheets)
-
-		if err != nil {
-			return "", err
-		}
+	if err != nil {
+		return "", err
 	}
 
 	mediaQueriesString := extractMediaQueries(styleString)
 
 	template, err := handlebars.Parse(templateString)
+
 	if err != nil {
 		return "", err
 	}
@@ -136,6 +74,7 @@ func RenderTemplate(config RenderConfig) (string, error) {
 
 	// get raw html with style tags
 	baseHtml, err := template.Exec(config.Context)
+
 	if err != nil {
 		return "", err
 	}
@@ -144,11 +83,13 @@ func RenderTemplate(config RenderConfig) (string, error) {
 		RemoveClasses:   false, // false for media queries
 		CssToAttributes: true,
 	})
+
 	if err != nil {
 		return "", err
 	}
 
 	html, err := premailer.Transform()
+
 	if err != nil {
 		return "", err
 	}
@@ -156,14 +97,41 @@ func RenderTemplate(config RenderConfig) (string, error) {
 	return html, nil
 }
 
-func extractStyleSheets(styleSheets []File) (string, error) {
-	styleString := ""
+func extractTemplates(config RenderConfig) (string, error) {
+	templateString := ""
 
-	for _, styleSheet := range styleSheets {
-		styleSheetContent, err := styleSheet.Fs.ReadFile(styleSheet.FileName)
+	if config.UseDefaultTemplates {
+		config.Templates = append([]File{{Fs: templateFS, FileName: "templates/header.hbs"}}, config.Templates...)
+		config.Templates = append(config.Templates, File{Fs: templateFS, FileName: "templates/footer.hbs"})
+	}
+
+	for _, template := range config.Templates {
+		templateContent, err := template.Fs.ReadFile(template.FileName)
+
 		if err != nil {
 			return "", err
 		}
+
+		templateString += string(templateContent)
+	}
+
+	return templateString, nil
+}
+
+func extractStyleSheets(config RenderConfig) (string, error) {
+	styleString := ""
+
+	if config.UseDefaultTemplates {
+		config.StyleSheets = append([]File{{Fs: templateFS, FileName: "templates/styles/base.css"}}, config.StyleSheets...)
+	}
+
+	for _, styleSheet := range config.StyleSheets {
+		styleSheetContent, err := styleSheet.Fs.ReadFile(styleSheet.FileName)
+
+		if err != nil {
+			return "", err
+		}
+
 		styleString += string(styleSheetContent)
 	}
 
@@ -232,8 +200,6 @@ func transformPath(path string) string {
 
 		return path
 	}
-
-	// logs.Print("transformPath", string(jsonPayload))
 
 	transformedPath := base64.URLEncoding.EncodeToString(jsonPayload)
 
