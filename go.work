@@ -17,4 +17,5 @@ use (
 	./photo
 	./slicesfunc
 	./testhelpers
+	./mailer
 )

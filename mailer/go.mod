@@ -1,8 +1,11 @@
-module github.com/scrambledeggs/booky-go-common
+module github.com/scrambledeggs/booky-go-common/mailer
 
-go 1.22
+go 1.23.4
 
-require github.com/scrambledeggs/booky-go-common/encryption v0.0.0-20191003071505-64d725be3c07
+require (
+	github.com/flowchartsman/handlebars/v3 v3.0.1
+	github.com/vanng822/go-premailer v1.25.0
+)
 
 require (
 	github.com/aws/aws-sdk-go v1.55.7 // indirect
@@ -23,6 +26,10 @@ require (
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/PuerkitoBio/goquery v1.10.3 // indirect
+	github.com/andybalholm/cascadia v1.3.3 // indirect
+	github.com/gorilla/css v1.0.1 // indirect
 	github.com/scrambledeggs/booky-go-common/logs v0.0.0-20250730061253-cfd667c4e77f
+	github.com/vanng822/css v1.0.1 // indirect
+	golang.org/x/net v0.41.0 // indirect
 )
