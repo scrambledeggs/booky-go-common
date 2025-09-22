@@ -17,6 +17,8 @@ func TestParseUser(t *testing.T) {
 		"user_id":               "0496a7eb-d7a9-4ecc-9276-1d1af4dc9158",
 		"user_name":             "Naknang Patatas",
 		"user_mobile_number":    "09999999999",
+		"user_birth_date":       "1991-01-01",
+		"user_gender":           "prefer not to say",
 		"user_maya_customer_id": nil,
 		"user_deactivated_at":   nil,
 	}
@@ -24,12 +26,16 @@ func TestParseUser(t *testing.T) {
 	userMobileNumber := rawAuthorizerContext["user_mobile_number"].(string)
 	userName := rawAuthorizerContext["user_name"].(string)
 	userEmail := rawAuthorizerContext["user_email"].(string)
+	userBirthDate := rawAuthorizerContext["user_birth_date"].(string)
+	userGender := rawAuthorizerContext["user_gender"].(string)
 
 	rawExpectedUser := RequestContextUser{
 		ID:             &pgtype.UUID{Bytes: uuid.MustParse(rawAuthorizerContext["user_id"].(string)), Valid: true},
 		MobileNumber:   &userMobileNumber,
 		Name:           &userName,
 		Email:          &userEmail,
+		BirthDate:      &userBirthDate,
+		Gender:         &userGender,
 		MayaCustomerID: nil,
 		DeactivatedAt:  nil,
 	}
