@@ -12,6 +12,8 @@ type RequestContextUser struct {
 	MobileNumber   *string      `json:"user_mobile_number"`
 	Name           *string      `json:"user_name"`
 	Email          *string      `json:"user_email"`
+	BirthDate      *string      `json:"user_birth_date"`
+	Gender         *string      `json:"user_gender"`
 	MayaCustomerID *string      `json:"user_maya_customer_id"`
 	DeactivatedAt  *string      `json:"user_deactivated_at"`
 }
