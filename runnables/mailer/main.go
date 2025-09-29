@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	"os"
 
 	"github.com/scrambledeggs/booky-go-common/logs"
 	"github.com/scrambledeggs/booky-go-common/mailer"
@@ -10,8 +9,6 @@ import (
 
 //go:embed templates/*
 var templateFS embed.FS
-
-var IMAGE_BASE_URL = os.Getenv("IMAGE_BASE_URL")
 
 type User struct {
 	Name  string
@@ -27,7 +24,6 @@ func main() {
 	title := "Welcome to Booky!"
 
 	html, err := mailer.RenderTemplate(mailer.RenderConfig{
-		ImageBaseUrl:        IMAGE_BASE_URL,
 		UseDefaultTemplates: true,
 		Templates: []mailer.File{
 			{Fs: templateFS, FileName: "templates/welcome.hbs"},

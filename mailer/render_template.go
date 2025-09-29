@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 
@@ -12,6 +13,9 @@ import (
 	"github.com/scrambledeggs/booky-go-common/logs"
 	"github.com/vanng822/go-premailer/premailer"
 )
+
+var IMAGE_BASE_URL = os.Getenv("IMAGE_BASE_URL")
+var IMAGE_FOLDER_PATH = os.Getenv("IMAGE_FOLDER_PATH")
 
 type File struct {
 	Fs       embed.FS
@@ -22,7 +26,6 @@ type RenderConfig struct {
 	Context             map[string]interface{}
 	Templates           []File
 	StyleSheets         []File
-	ImageBaseUrl        string
 	CompileType         string
 	UseDefaultTemplates bool
 }
@@ -69,7 +72,7 @@ func RenderTemplate(config RenderConfig) (string, error) {
 	template.RegisterPartial("mediaQueries", mediaQueriesPartial)
 
 	template.RegisterHelper("image", func(path string) string {
-		return strings.TrimSuffix(config.ImageBaseUrl, "/") + "/" + transformPath(path)
+		return strings.TrimSuffix(IMAGE_BASE_URL, "/") + "/" + transformPath(path)
 	})
 
 	// get raw html with style tags
@@ -150,7 +153,7 @@ func transformPath(path string) string {
 		return path
 	}
 
-	// SIH Path format: <BUCKET>,<PATH>,<WIDTH>,<HEIGHT>
+	// SIH Path format: <BUCKET>,<NAME>,<WIDTH>,<HEIGHT>
 	params := strings.Split(path, ",")
 	paramsLength := len(params)
 
@@ -161,7 +164,7 @@ func transformPath(path string) string {
 	}
 
 	bucket := params[0]
-	key := params[1]
+	key := IMAGE_FOLDER_PATH + "/" + params[1]
 
 	var width = ""
 	var height = ""
