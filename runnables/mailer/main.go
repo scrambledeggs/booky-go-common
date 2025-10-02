@@ -18,7 +18,7 @@ type User struct {
 func main() {
 	user := User{
 		Name:  "Mervyl Canlas",
-		Email: "mervyl@phonebooky.com",
+		Email: "mervylcanlas@yahoo.com",
 	}
 
 	title := "Welcome to Booky!"
