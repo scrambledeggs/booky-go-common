@@ -36,13 +36,12 @@ const (
 const PRODUCTION_ENV = "production"
 
 type logEntry struct {
-	Level    Level    `json:"level"`
-	Env      []string `json:"env,omitempty"`
-	Request  any      `json:"request,omitempty"`
-	Function string   `json:"function,omitempty"`
-	AppEnv   string   `json:"app_env,omitempty"`
-	Note     string   `json:"note"`
-	Data     any      `json:"data,omitempty"`
+	Level    Level  `json:"level"`
+	Request  any    `json:"request,omitempty"`
+	Function string `json:"function,omitempty"`
+	AppEnv   string `json:"app_env,omitempty"`
+	Note     string `json:"note"`
+	Data     any    `json:"data,omitempty"`
 }
 
 var Request any
@@ -99,7 +98,6 @@ func logIt(level Level, note string, data ...any) {
 	}
 
 	if level != PRINT {
-		le.Env = os.Environ()
 		le.Request = Request
 		le.Function = os.Getenv("AWS_LAMBDA_FUNCTION_NAME")
 		le.AppEnv = os.Getenv("APP_ENV")
