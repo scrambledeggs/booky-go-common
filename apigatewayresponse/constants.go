@@ -1,17 +1,20 @@
 package apigatewayresponse
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/scrambledeggs/booky-go-common/slicesfunc"
 )
 
+var allowHeaders = os.Getenv("CORS_ALLOWED_HEADERS")
+var allowOrigins = os.Getenv("CORS_ALLOWED_ORIGINS")
+var allowMethods = os.Getenv("CORS_ALLOWED_METHODS")
+
 var HTTPHeaders = map[string]string{
-	"Access-Control-Allow-Origin":  os.Getenv("CORS_ALLOWED_ORIGINS"),
-	"Access-Control-Allow-Methods": os.Getenv("CORS_ALLOWED_METHODS"),
-	"Access-Control-Allow-Headers": os.Getenv("CORS_ALLOWED_HEADERS"),
+	"Access-Control-Allow-Origin":  allowOrigins,
+	"Access-Control-Allow-Methods": allowMethods,
+	"Access-Control-Allow-Headers": allowHeaders,
 	"Content-Type":                 "application/json",
 }
 
@@ -23,27 +26,20 @@ type PaginationMetadata struct {
 
 func buildResponseHeaders(origin string) map[string]string {
 	var headers = map[string]string{
-		"Access-Control-Allow-Methods": os.Getenv("CORS_ALLOWED_METHODS"),
-		"Access-Control-Allow-Headers": os.Getenv("CORS_ALLOWED_HEADERS"),
-		"Content-Type":                 "application/json",
+		"Access-Control-Allow-Methods":     allowMethods,
+		"Access-Control-Allow-Headers":     allowHeaders,
+		"Access-Control-Allow-Credentials": "true",
+		"Content-Type":                     "application/json",
 	}
 
-	allowOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")
-
-	fmt.Println("===============================")
-	fmt.Println("allowOrigins", allowOrigins)
-	fmt.Println("origin", origin)
-
 	if allowOrigins == "*" {
-		headers["Access-Control-Allow-Origin"] = origin // ❗ NOT "*"
+		headers["Access-Control-Allow-Origin"] = origin
 	} else {
 		allowed := strings.Split(allowOrigins, ",")
 		if slicesfunc.Contains(origin, allowed) {
 			headers["Access-Control-Allow-Origin"] = origin
 		}
 	}
-
-	fmt.Println("responseHeaders", headers)
 
 	return headers
 }
