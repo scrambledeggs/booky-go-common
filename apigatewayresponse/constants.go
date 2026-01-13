@@ -26,6 +26,13 @@ type PaginationMetadata struct {
 }
 
 func buildResponseHeaders(origin string) map[string]string {
+	var responseHeaders = map[string]string{
+		"Access-Control-Allow-Origin":  allowOrigins,
+		"Access-Control-Allow-Methods": allowMethods,
+		"Access-Control-Allow-Headers": allowHeaders,
+		"Content-Type":                 "application/json",
+	}
+
 	fmt.Println("===============================")
 	fmt.Println("allowOrigins", allowOrigins)
 	fmt.Println("origin", origin)
@@ -34,13 +41,13 @@ func buildResponseHeaders(origin string) map[string]string {
 		allowed := strings.Split(allowOrigins, ",")
 
 		if slicesfunc.Contains(origin, allowed) {
-			HTTPHeaders["Access-Control-Allow-Origin"] = origin
+			responseHeaders["Access-Control-Allow-Origin"] = origin
 		} else {
-			HTTPHeaders["Access-Control-Allow-Origin"] = ""
+			responseHeaders["Access-Control-Allow-Origin"] = ""
 		}
 	}
 
-	fmt.Println("HTTPHeaders", HTTPHeaders)
+	fmt.Println("responseHeaders", responseHeaders)
 
-	return HTTPHeaders
+	return responseHeaders
 }
