@@ -1,6 +1,11 @@
 package apigatewayresponse
 
-import "os"
+import (
+	"os"
+	"strings"
+
+	"github.com/scrambledeggs/booky-go-common/slicesfunc"
+)
 
 var allowHeaders = os.Getenv("CORS_ALLOWED_HEADERS")
 var allowOrigins = os.Getenv("CORS_ALLOWED_ORIGINS")
@@ -17,4 +22,18 @@ type PaginationMetadata struct {
 	Page           int `json:"page"`
 	ResultsPerPage int `json:"results_per_page"`
 	TotalCount     int `json:"total_count"`
+}
+
+func buildResponseHeaders(origin string) map[string]string {
+	if allowOrigins != "*" {
+		allowed := strings.Split(allowOrigins, ",")
+
+		if !slicesfunc.Contains(origin, allowed) {
+			HTTPHeaders["Access-Control-Allow-Origin"] = origin
+		} else {
+			HTTPHeaders["Access-Control-Allow-Origin"] = ""
+		}
+	}
+
+	return HTTPHeaders
 }
