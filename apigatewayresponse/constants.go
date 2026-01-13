@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/scrambledeggs/booky-go-common/logs"
 	"github.com/scrambledeggs/booky-go-common/slicesfunc"
 )
 
@@ -28,12 +29,16 @@ func buildResponseHeaders(origin string) map[string]string {
 	if allowOrigins != "*" {
 		allowed := strings.Split(allowOrigins, ",")
 
-		if !slicesfunc.Contains(origin, allowed) {
+		if slicesfunc.Contains(origin, allowed) {
 			HTTPHeaders["Access-Control-Allow-Origin"] = origin
 		} else {
 			HTTPHeaders["Access-Control-Allow-Origin"] = ""
 		}
 	}
+
+	logs.Print("allowOrigins", allowOrigins)
+	logs.Print("origin", origin)
+	logs.Print("HTTPHeaders", HTTPHeaders)
 
 	return HTTPHeaders
 }
