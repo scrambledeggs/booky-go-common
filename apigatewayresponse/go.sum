@@ -1,10 +1,14 @@
 github.com/aws/aws-lambda-go v1.48.0 h1:1aZUYsrJu0yo5fC4z+Rba1KhNImXcJcvHu763BxoyIo=
+github.com/aws/aws-lambda-go v1.48.0/go.mod h1:dpMpZgvWx5vuQJfBt0zqBha60q7Dd7RfgJv23DymV8A=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/scrambledeggs/booky-go-common/assert v0.0.0-20240712043126-afd72089aa6b h1:Lcum0a4xCeKw3Fvjd2cVw3aJnNpEoAjpyD/gENK1KRI=
 github.com/scrambledeggs/booky-go-common/assert v0.0.0-20240712043126-afd72089aa6b/go.mod h1:neA3usDYEgsdXETPKaTB/8kpOE6SKMU7Y2BlHLzmYSc=
+github.com/scrambledeggs/booky-go-common/slicesfunc v0.0.0-20260113145210-e93078e90e82 h1:QwGryRg40LD4e9fmakmLTAefDRR0yYJQNzSrTZD/fgE=
+github.com/scrambledeggs/booky-go-common/slicesfunc v0.0.0-20260113145210-e93078e90e82/go.mod h1:CLmRVb34Ixd2azNl0rWfP15CEHu6SJ3U/MxG1kIj5Qo=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
+github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
