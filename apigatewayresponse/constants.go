@@ -1,10 +1,10 @@
 package apigatewayresponse
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
-	"github.com/scrambledeggs/booky-go-common/logs"
 	"github.com/scrambledeggs/booky-go-common/slicesfunc"
 )
 
@@ -26,6 +26,10 @@ type PaginationMetadata struct {
 }
 
 func buildResponseHeaders(origin string) map[string]string {
+	fmt.Println("===============================")
+	fmt.Println("allowOrigins", allowOrigins)
+	fmt.Println("origin", origin)
+
 	if allowOrigins != "*" {
 		allowed := strings.Split(allowOrigins, ",")
 
@@ -36,9 +40,7 @@ func buildResponseHeaders(origin string) map[string]string {
 		}
 	}
 
-	logs.Print("allowOrigins", allowOrigins)
-	logs.Print("origin", origin)
-	logs.Print("HTTPHeaders", HTTPHeaders)
+	fmt.Println("HTTPHeaders", HTTPHeaders)
 
 	return HTTPHeaders
 }
