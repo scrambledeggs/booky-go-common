@@ -8,14 +8,14 @@ import (
 )
 
 type SingleSuccessResponseV2Params struct {
-	Origin            string
-	Status            int
-	Data              any
-	Headers           map[string]string
-	MultiValueHeaders map[string][]string
+	Origin  string
+	Status  int
+	Data    any
+	Headers map[string]string
+	Cookies []string
 }
 
-func SingleSuccessResponseV2(params SingleSuccessResponseV2Params) (events.APIGatewayProxyResponse, error) {
+func SingleSuccessResponseV2(params SingleSuccessResponseV2Params) (events.APIGatewayV2HTTPResponse, error) {
 	var strBody []byte
 
 	headers := buildResponseHeaders(params.Origin)
@@ -26,13 +26,13 @@ func SingleSuccessResponseV2(params SingleSuccessResponseV2Params) (events.APIGa
 		}
 	}
 
-	response := events.APIGatewayProxyResponse{
+	response := events.APIGatewayV2HTTPResponse{
 		Headers:    headers,
 		StatusCode: params.Status,
 	}
 
-	if params.MultiValueHeaders != nil {
-		response.MultiValueHeaders = params.MultiValueHeaders
+	if params.Cookies != nil {
+		response.Cookies = params.Cookies
 	}
 
 	strBody, err := json.Marshal(params.Data)
@@ -47,15 +47,15 @@ func SingleSuccessResponseV2(params SingleSuccessResponseV2Params) (events.APIGa
 }
 
 type MultipleSuccessResponseV2Params struct {
-	Origin            string
-	Status            int
-	Data              any
-	Metadata          any
-	Headers           map[string]string
-	MultiValueHeaders map[string][]string
+	Origin   string
+	Status   int
+	Data     any
+	Metadata any
+	Headers  map[string]string
+	Cookies  []string
 }
 
-func MultipleSuccessResponseV2(params MultipleSuccessResponseV2Params) (events.APIGatewayProxyResponse, error) {
+func MultipleSuccessResponseV2(params MultipleSuccessResponseV2Params) (events.APIGatewayV2HTTPResponse, error) {
 	var strBody []byte
 
 	headers := buildResponseHeaders(params.Origin)
@@ -66,13 +66,13 @@ func MultipleSuccessResponseV2(params MultipleSuccessResponseV2Params) (events.A
 		}
 	}
 
-	response := events.APIGatewayProxyResponse{
+	response := events.APIGatewayV2HTTPResponse{
 		Headers:    headers,
 		StatusCode: params.Status,
 	}
 
-	if params.MultiValueHeaders != nil {
-		response.MultiValueHeaders = params.MultiValueHeaders
+	if params.Cookies != nil {
+		response.Cookies = params.Cookies
 	}
 
 	body := MultipleSuccessResponseBody{

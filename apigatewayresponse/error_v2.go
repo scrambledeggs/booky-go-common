@@ -7,14 +7,14 @@ import (
 )
 
 type MultipleErrorResponseV2Params struct {
-	Origin            string
-	Status            int
-	Errors            []ErrorResponseBody
-	Headers           map[string]string
-	MultiValueHeaders map[string][]string
+	Origin  string
+	Status  int
+	Errors  []ErrorResponseBody
+	Headers map[string]string
+	Cookies []string
 }
 
-func MultipleErrorResponseV2(params MultipleErrorResponseV2Params) (events.APIGatewayProxyResponse, error) {
+func MultipleErrorResponseV2(params MultipleErrorResponseV2Params) (events.APIGatewayV2HTTPResponse, error) {
 	headers := buildResponseHeaders(params.Origin)
 
 	if params.Headers != nil {
@@ -23,13 +23,13 @@ func MultipleErrorResponseV2(params MultipleErrorResponseV2Params) (events.APIGa
 		}
 	}
 
-	response := events.APIGatewayProxyResponse{
+	response := events.APIGatewayV2HTTPResponse{
 		Headers:    headers,
 		StatusCode: params.Status,
 	}
 
-	if params.MultiValueHeaders != nil {
-		response.MultiValueHeaders = params.MultiValueHeaders
+	if params.Cookies != nil {
+		response.Cookies = params.Cookies
 	}
 
 	body := MultipleErrorResponseBody{
@@ -48,14 +48,14 @@ func MultipleErrorResponseV2(params MultipleErrorResponseV2Params) (events.APIGa
 }
 
 type SingleErrorResponseV2Params struct {
-	Origin            string
-	Status            int
-	Error             ErrorResponseBody
-	Headers           map[string]string
-	MultiValueHeaders map[string][]string
+	Origin  string
+	Status  int
+	Error   ErrorResponseBody
+	Headers map[string]string
+	Cookies []string
 }
 
-func SingleErrorResponseV2(params SingleErrorResponseV2Params) (events.APIGatewayProxyResponse, error) {
+func SingleErrorResponseV2(params SingleErrorResponseV2Params) (events.APIGatewayV2HTTPResponse, error) {
 	headers := buildResponseHeaders(params.Origin)
 
 	if params.Headers != nil {
@@ -64,13 +64,13 @@ func SingleErrorResponseV2(params SingleErrorResponseV2Params) (events.APIGatewa
 		}
 	}
 
-	response := events.APIGatewayProxyResponse{
+	response := events.APIGatewayV2HTTPResponse{
 		Headers:    headers,
 		StatusCode: params.Status,
 	}
 
-	if params.MultiValueHeaders != nil {
-		response.MultiValueHeaders = params.MultiValueHeaders
+	if params.Cookies != nil {
+		response.Cookies = params.Cookies
 	}
 
 	strBody, er := json.Marshal(params.Error)
