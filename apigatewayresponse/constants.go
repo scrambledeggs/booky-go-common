@@ -25,17 +25,23 @@ type PaginationMetadata struct {
 }
 
 func buildResponseHeaders(origin string) map[string]string {
+	// Read environment variables at runtime to support testing
+	runtimeAllowOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")
+	runtimeAllowMethods := os.Getenv("CORS_ALLOWED_METHODS")
+	runtimeAllowHeaders := os.Getenv("CORS_ALLOWED_HEADERS")
+
 	var headers = map[string]string{
-		"Access-Control-Allow-Methods":     allowMethods,
-		"Access-Control-Allow-Headers":     allowHeaders,
+		"Access-Control-Allow-Methods":     runtimeAllowMethods,
+		"Access-Control-Allow-Headers":     runtimeAllowHeaders,
 		"Access-Control-Allow-Credentials": "true",
 		"Content-Type":                     "application/json",
 	}
 
-	if allowOrigins == "*" {
+	if runtimeAllowOrigins == "*" {
 		headers["Access-Control-Allow-Origin"] = origin
-	} else {
-		allowed := strings.Split(allowOrigins, ",")
+	} else if runtimeAllowOrigins != "" {
+		allowed := strings.Split(runtimeAllowOrigins, ",")
+
 		if slicesfunc.Contains(origin, allowed) {
 			headers["Access-Control-Allow-Origin"] = origin
 		}

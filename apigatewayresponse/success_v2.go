@@ -7,15 +7,35 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
-func SingleSuccessResponseV2(origin string, status int, data any) (events.APIGatewayProxyResponse, error) {
+type SingleSuccessResponseV2Params struct {
+	Origin            string
+	Status            int
+	Data              any
+	Headers           map[string]string
+	MultiValueHeaders map[string][]string
+}
+
+func SingleSuccessResponseV2(params SingleSuccessResponseV2Params) (events.APIGatewayProxyResponse, error) {
 	var strBody []byte
 
-	response := events.APIGatewayProxyResponse{
-		Headers:    buildResponseHeaders(origin),
-		StatusCode: status,
+	headers := buildResponseHeaders(params.Origin)
+
+	if params.Headers != nil {
+		for k, v := range params.Headers {
+			headers[k] = v
+		}
 	}
 
-	strBody, err := json.Marshal(data)
+	response := events.APIGatewayProxyResponse{
+		Headers:    headers,
+		StatusCode: params.Status,
+	}
+
+	if params.MultiValueHeaders != nil {
+		response.MultiValueHeaders = params.MultiValueHeaders
+	}
+
+	strBody, err := json.Marshal(params.Data)
 
 	if err != nil {
 		panic(err.Error())
@@ -26,20 +46,41 @@ func SingleSuccessResponseV2(origin string, status int, data any) (events.APIGat
 	return response, nil
 }
 
-func MultipleSuccessResponseV2(origin string, status int, data any, metadata any) (events.APIGatewayProxyResponse, error) {
+type MultipleSuccessResponseV2Params struct {
+	Origin            string
+	Status            int
+	Data              any
+	Metadata          any
+	Headers           map[string]string
+	MultiValueHeaders map[string][]string
+}
+
+func MultipleSuccessResponseV2(params MultipleSuccessResponseV2Params) (events.APIGatewayProxyResponse, error) {
 	var strBody []byte
 
+	headers := buildResponseHeaders(params.Origin)
+
+	if params.Headers != nil {
+		for k, v := range params.Headers {
+			headers[k] = v
+		}
+	}
+
 	response := events.APIGatewayProxyResponse{
-		Headers:    buildResponseHeaders(origin),
-		StatusCode: status,
+		Headers:    headers,
+		StatusCode: params.Status,
+	}
+
+	if params.MultiValueHeaders != nil {
+		response.MultiValueHeaders = params.MultiValueHeaders
 	}
 
 	body := MultipleSuccessResponseBody{
-		Results: data,
+		Results: params.Data,
 	}
 
-	if metadata != nil {
-		mtdt, _ := metadata.(map[string]any)
+	if params.Metadata != nil {
+		mtdt, _ := params.Metadata.(map[string]any)
 
 		totalCount, isTotalCountTypeInt64 := mtdt["total_count"].(int64)
 		resultsPerPage, isResultsPerPageTypeInt64 := mtdt["results_per_page"].(int64)

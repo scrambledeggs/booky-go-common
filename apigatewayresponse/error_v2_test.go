@@ -3,15 +3,17 @@ package apigatewayresponse
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/scrambledeggs/booky-go-common/assert"
 )
 
-func TestSingleErrorResponse(t *testing.T) {
+func TestSingleErrorResponseV2(t *testing.T) {
+	os.Setenv("CORS_ALLOWED_ORIGINS", "*")
 	status := http.StatusBadRequest
+	origin := "http://localhost:3000"
 
 	err := errors.New("invalid arguments")
 
@@ -20,7 +22,13 @@ func TestSingleErrorResponse(t *testing.T) {
 		Code:    "INVALID_ARGUMENTS",
 	}
 
-	response, err := SingleErrorResponse(status, errorObj)
+	params := SingleErrorResponseV2Params{
+		Status: status,
+		Error:  errorObj,
+		Origin: origin,
+	}
+
+	response, err := SingleErrorResponseV2(params)
 
 	var responseBody ErrorResponseBody
 
@@ -31,10 +39,14 @@ func TestSingleErrorResponse(t *testing.T) {
 	assert.DeepEqual(t, responseBody, errorObj, "invalid value for error response")
 
 	assert.Equal(t, response.StatusCode, status, "invalid status code")
+
+	assert.Equal(t, response.Headers["Access-Control-Allow-Origin"], origin, "invalid origin")
 }
 
-func TestMultipleErrorsResponse(t *testing.T) {
+func TestMultipleErrorsResponseV2(t *testing.T) {
+	os.Setenv("CORS_ALLOWED_ORIGINS", "*")
 	status := http.StatusInternalServerError
+	origin := "http://localhost:3000"
 
 	err1 := errors.New("invalid name")
 
@@ -50,7 +62,15 @@ func TestMultipleErrorsResponse(t *testing.T) {
 		Code:    "INVALID_ARGUMENTS",
 	}
 
-	response, err := MultipleErrorResponse(status, []ErrorResponseBody{error1Obj, error2Obj})
+	errors := []ErrorResponseBody{error1Obj, error2Obj}
+
+	params := MultipleErrorResponseV2Params{
+		Status: status,
+		Errors: errors,
+		Origin: origin,
+	}
+
+	response, err := MultipleErrorResponseV2(params)
 
 	var responseBody MultipleErrorResponseBody
 
@@ -62,45 +82,6 @@ func TestMultipleErrorsResponse(t *testing.T) {
 	assert.DeepEqual(t, responseBody.Errors[1], error2Obj, "invalid error value for second element")
 
 	assert.Equal(t, response.StatusCode, status, "invalid status code")
-}
 
-func ExampleSingleErrorResponse() {
-	status := http.StatusBadRequest
-
-	err := errors.New("invalid arguments")
-
-	errorObj := ErrorResponseBody{
-		Message: err.Error(),
-		Code:    "INVALID_ARGUMENTS",
-	}
-
-	response, _ := SingleErrorResponse(status, errorObj)
-
-	fmt.Println(response.Body, response.StatusCode)
-
-	// Output: {"message":"invalid arguments","code":"INVALID_ARGUMENTS"} 400
-}
-
-func ExampleMultipleErrorResponse() {
-	status := http.StatusInternalServerError
-
-	err1 := errors.New("invalid name")
-
-	error1Obj := ErrorResponseBody{
-		Message: err1.Error(),
-		Code:    "INVALID_ARGUMENTS",
-	}
-
-	err2 := errors.New("invalid slug")
-
-	error2Obj := ErrorResponseBody{
-		Message: err2.Error(),
-		Code:    "INVALID_ARGUMENTS",
-	}
-
-	response, _ := MultipleErrorResponse(status, []ErrorResponseBody{error1Obj, error2Obj})
-
-	fmt.Println(response.Body, response.StatusCode)
-
-	// Output: {"errors":[{"message":"invalid name","code":"INVALID_ARGUMENTS"},{"message":"invalid slug","code":"INVALID_ARGUMENTS"}]} 500
+	assert.Equal(t, response.Headers["Access-Control-Allow-Origin"], origin, "invalid origin")
 }

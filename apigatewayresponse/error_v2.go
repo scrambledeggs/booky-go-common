@@ -6,14 +6,34 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
-func MultipleErrorResponseV2(origin string, status int, errors []ErrorResponseBody) (events.APIGatewayProxyResponse, error) {
+type MultipleErrorResponseV2Params struct {
+	Origin            string
+	Status            int
+	Errors            []ErrorResponseBody
+	Headers           map[string]string
+	MultiValueHeaders map[string][]string
+}
+
+func MultipleErrorResponseV2(params MultipleErrorResponseV2Params) (events.APIGatewayProxyResponse, error) {
+	headers := buildResponseHeaders(params.Origin)
+
+	if params.Headers != nil {
+		for k, v := range params.Headers {
+			headers[k] = v
+		}
+	}
+
 	response := events.APIGatewayProxyResponse{
-		Headers:    buildResponseHeaders(origin),
-		StatusCode: status,
+		Headers:    headers,
+		StatusCode: params.Status,
+	}
+
+	if params.MultiValueHeaders != nil {
+		response.MultiValueHeaders = params.MultiValueHeaders
 	}
 
 	body := MultipleErrorResponseBody{
-		Errors: errors,
+		Errors: params.Errors,
 	}
 
 	strBody, err := json.Marshal(body)
@@ -27,13 +47,33 @@ func MultipleErrorResponseV2(origin string, status int, errors []ErrorResponseBo
 	return response, nil
 }
 
-func SingleErrorResponseV2(origin string, status int, err ErrorResponseBody) (events.APIGatewayProxyResponse, error) {
-	response := events.APIGatewayProxyResponse{
-		Headers:    buildResponseHeaders(origin),
-		StatusCode: status,
+type SingleErrorResponseV2Params struct {
+	Origin            string
+	Status            int
+	Error             ErrorResponseBody
+	Headers           map[string]string
+	MultiValueHeaders map[string][]string
+}
+
+func SingleErrorResponseV2(params SingleErrorResponseV2Params) (events.APIGatewayProxyResponse, error) {
+	headers := buildResponseHeaders(params.Origin)
+
+	if params.Headers != nil {
+		for k, v := range params.Headers {
+			headers[k] = v
+		}
 	}
 
-	strBody, er := json.Marshal(err)
+	response := events.APIGatewayProxyResponse{
+		Headers:    headers,
+		StatusCode: params.Status,
+	}
+
+	if params.MultiValueHeaders != nil {
+		response.MultiValueHeaders = params.MultiValueHeaders
+	}
+
+	strBody, er := json.Marshal(params.Error)
 
 	if er != nil {
 		panic(er.Error())
