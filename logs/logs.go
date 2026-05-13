@@ -46,7 +46,7 @@ type logEntry struct {
 
 var Request any
 
-// For development debugging. Will not log on Production.
+// For production debugging.
 // Requires `APP_ENV` equal `production`
 func Debug(note string, data ...any) {
 	if os.Getenv("APP_ENV") == PRODUCTION_ENV {
@@ -56,9 +56,13 @@ func Debug(note string, data ...any) {
 	logIt(DEBUG, note, data...)
 }
 
-// For development logging only. Will not log on Production.
-// Requires `APP_ENV` equal `production`
+// For development logging only. Plainly prints prettified data
+// Requires `APP_ENV` not equal `production`
 func Print(note string, data ...any) {
+	if os.Getenv("APP_ENV") != PRODUCTION_ENV {
+		return
+	}
+
 	logIt(PRINT, note, data...)
 }
 
