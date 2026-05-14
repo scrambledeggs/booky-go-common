@@ -46,43 +46,53 @@ type logEntry struct {
 
 var Request any
 
-// For development debugging. Will not log on Production.
-// Requires `APP_ENV` equal `production`
+// Production-only debugging. Suppressed outside production (APP_ENV != production).
+// Use for targeted diagnostics when investigating a live issue.
 func Debug(note string, data ...any) {
-	if os.Getenv("APP_ENV") == PRODUCTION_ENV {
+	if os.Getenv("APP_ENV") != PRODUCTION_ENV {
 		return
 	}
 
 	logIt(DEBUG, note, data...)
 }
 
-// For development logging only. Will not log on Production.
-// Requires `APP_ENV` equal `production`
+// Dev-only pretty-printed output. Suppressed in production (APP_ENV=production).
 func Print(note string, data ...any) {
+	if os.Getenv("APP_ENV") == PRODUCTION_ENV {
+		return
+	}
+
 	logIt(PRINT, note, data...)
 }
 
-// Log used in event tracing like User clicked pay (CT like)
+// Business event recording — analytics-shaped breadcrumbs.
+// Use for "user did X" events: payment initiated, promo applied, order placed.
 func Trace(note string, data ...any) {
 	logIt(TRACE, note, data...)
 }
 
-// Basic level logging
+// Operational milestones and non-business parse rejections from external callers
+// (bad JSON, missing fields, invalid UUIDs). Do not use for variable dumps — use Debug.
+// Alarmed at high threshold.
 func Info(note string, data ...any) {
 	logIt(INFO, note, data...)
 }
 
-// Level for expected errors like ID not found
+// Expected business failures: rule rejected (4xx), idempotent short-circuit (2xx with hiccup), retry recovered.
+// Alarmed at moderate threshold.
 func Warn(note string, data ...any) {
 	logIt(WARN, note, data...)
 }
 
-// Level for "expected" crashes like can't connect to database
+// System misbehaved: sync 5xx, async task ended Failed, retries exhausted,
+// programmer bug surfacing as 500, or side-effect failure after a successful primary operation.
+// Alarmed at low threshold (pages during business hours).
 func Error(note string, data ...any) {
 	logIt(ERROR, note, data...)
 }
 
-// Level for system crashes
+// Service cannot run. Pair with panic() or os.Exit(1) to halt — Fatal() alone only logs.
+// Alarmed at threshold 1 in every environment (pages immediately).
 func Fatal(note string, data ...any) {
 	logIt(FATAL, note, data...)
 }
