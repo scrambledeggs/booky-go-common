@@ -21,15 +21,15 @@ import (
 // R2 (or any other S3-compatible endpoint) instead of AWS S3, additionally set
 // AWS_ENDPOINT_URL_S3 to that provider's endpoint (e.g. https://<account_id>.r2.cloudflarestorage.com)
 // — no other code change is needed to move a bucket between providers.
-func GeneratePresignedURL(bucketName, objectKey string, lifetimeSecs int64) (string, error) {
-	client, err := newS3Client(context.TODO())
+func GeneratePresignedURL(ctx context.Context, bucketName, objectKey string, lifetimeSecs int64) (string, error) {
+	client, err := newS3Client(ctx)
 	if err != nil {
 		return "", err
 	}
 
 	presignClient := s3.NewPresignClient(client)
 
-	request, err := presignClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
+	request, err := presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 	}, func(opts *s3.PresignOptions) {

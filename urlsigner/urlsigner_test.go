@@ -1,6 +1,7 @@
 package urlsigner
 
 import (
+	"context"
 	"net/url"
 	"testing"
 )
@@ -14,7 +15,7 @@ func setTestCreds(t *testing.T) {
 func TestGeneratePresignedURLAgainstAWS(t *testing.T) {
 	setTestCreds(t)
 
-	signedURL, err := GeneratePresignedURL("my-bucket", "path/to/object.csv", 604800)
+	signedURL, err := GeneratePresignedURL(context.Background(), "my-bucket", "path/to/object.csv", 604800)
 	if err != nil {
 		t.Fatalf("GeneratePresignedURL returned error: %v", err)
 	}
@@ -38,7 +39,7 @@ func TestGeneratePresignedURLAgainstCustomEndpoint(t *testing.T) {
 	setTestCreds(t)
 	t.Setenv("AWS_ENDPOINT_URL_S3", "https://abc123.r2.cloudflarestorage.com")
 
-	signedURL, err := GeneratePresignedURL("my-bucket", "path/to/object.csv", 1500)
+	signedURL, err := GeneratePresignedURL(context.Background(), "my-bucket", "path/to/object.csv", 1500)
 	if err != nil {
 		t.Fatalf("GeneratePresignedURL returned error: %v", err)
 	}
