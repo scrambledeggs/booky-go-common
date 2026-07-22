@@ -1,5 +1,5 @@
-// Log in JSON format for cloudwatch
-// All level entries are the same except for Debug
+// Log in single-line JSON, for CloudWatch and Railway structured-log parsing alike.
+// Print is the exception — dev-only, pretty-printed for terminal readability.
 // Level will be used for different parameters
 package logs
 
@@ -40,11 +40,17 @@ type logEntry struct {
 	Request  any    `json:"request,omitempty"`
 	Function string `json:"function,omitempty"`
 	AppEnv   string `json:"app_env,omitempty"`
-	Note     string `json:"note"`
+	Service  string `json:"service,omitempty"`
+	Message  string `json:"message"`
 	Data     any    `json:"data,omitempty"`
 }
 
 var Request any
+
+// Service identifies which upstream microservice is logging, since booky-ark
+// bundles many microservices' handlers into one process. Set by the caller
+// (e.g. booky-ark's apigwadapter/eventadapter) before invoking a handler.
+var Service string
 
 // Production-only debugging. Suppressed outside production (APP_ENV != production).
 // Use for targeted diagnostics when investigating a live issue.
@@ -97,10 +103,10 @@ func Fatal(note string, data ...any) {
 	logIt(FATAL, note, data...)
 }
 
-func logIt(level Level, note string, data ...any) {
+func logIt(level Level, message string, data ...any) {
 	le := logEntry{
-		Level: level,
-		Note:  note,
+		Level:   level,
+		Message: message,
 	}
 
 	if len(data) > 0 {
@@ -111,6 +117,7 @@ func logIt(level Level, note string, data ...any) {
 		le.Request = Request
 		le.Function = os.Getenv("AWS_LAMBDA_FUNCTION_NAME")
 		le.AppEnv = os.Getenv("APP_ENV")
+		le.Service = Service
 	}
 
 	l, err := jsonMarshal(le)
@@ -147,8 +154,12 @@ func logIt(level Level, note string, data ...any) {
 	wg.Wait()
 }
 
+// Print is dev-only console output — pretty-printed for terminal readability.
+// It never runs in production, so it never reaches Railway/CloudWatch. Every
+// other level ships single-line JSON so line-oriented log collectors can
+// parse one entry per line.
 func jsonMarshal(le logEntry) ([]byte, error) {
-	if le.Level == DEBUG || le.Level == PRINT {
+	if le.Level == PRINT {
 		return json.MarshalIndent(le, "", "  ")
 	}
 
