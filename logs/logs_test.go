@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -96,28 +97,51 @@ func TestLogIt_SetsMessage(t *testing.T) {
 	}
 }
 
-// Service lets a caller (e.g. booky-ark's apigwadapter) attribute a log line
-// to the upstream microservice that produced it, since many microservices'
-// handlers run inside one shared process.
-func TestLogIt_SetsService(t *testing.T) {
-	t.Cleanup(func() { Service = "" })
-	Service = "booky-athena"
+// serviceFromFuncName is pure string parsing — exercise both module-path
+// shapes upstream services actually use (confirmed by checking their go.mod
+// files directly): the github.com/scrambledeggs/X convention, and a bare
+// module name with no scrambledeggs/ prefix at all.
+func TestServiceFromFuncName(t *testing.T) {
+	cases := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{"scrambledeggs prefix", "github.com/scrambledeggs/booky-athena/functions/GetCollectionByIDAdminV1/handler.Handler", "booky-athena"},
+		{"bare module", "booky-freyja/functions/NearbyVouchersV1/handler.Handler", "booky-freyja"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := serviceFromFuncName(c.in); got != c.want {
+				t.Errorf("got %q, want %q", got, c.want)
+			}
+		})
+	}
+}
+
+// Regression for the data race a reviewer caught on the previous approach
+// (a package-level Service variable written by the caller before invoking a
+// handler): concurrent callers must not share any mutable state. This alone
+// doesn't prove correct attribution across two different real callers (that's
+// covered by TestInfo_AttributesServiceFromCaller in service_test.go), but it
+// is the exact failure mode `go test -race` caught — run with -race to verify.
+func TestLogIt_ConcurrentCallsDoNotRace(t *testing.T) {
+	const n = 50
 
 	lines := captureOutput(t, func() {
-		Info("info note")
+		var wg sync.WaitGroup
+		for i := 0; i < n; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				Info("concurrent note")
+			}()
+		}
+		wg.Wait()
 	})
 
-	if len(lines) != 1 {
-		t.Fatalf("expected exactly 1 line of output, got %d: %v", len(lines), lines)
-	}
-
-	var raw map[string]any
-	if err := json.Unmarshal([]byte(lines[0]), &raw); err != nil {
-		t.Fatalf("output is not valid JSON: %v", err)
-	}
-
-	if raw["service"] != "booky-athena" {
-		t.Errorf(`"service" = %v, want %q`, raw["service"], "booky-athena")
+	if len(lines) != n {
+		t.Fatalf("expected %d lines, got %d", n, len(lines))
 	}
 }
 
