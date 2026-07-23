@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"runtime"
+	"strings"
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -46,11 +48,6 @@ type logEntry struct {
 }
 
 var Request any
-
-// Service identifies which upstream microservice is logging, since booky-ark
-// bundles many microservices' handlers into one process. Set by the caller
-// (e.g. booky-ark's apigwadapter/eventadapter) before invoking a handler.
-var Service string
 
 // Production-only debugging. Suppressed outside production (APP_ENV != production).
 // Use for targeted diagnostics when investigating a live issue.
@@ -117,7 +114,7 @@ func logIt(level Level, message string, data ...any) {
 		le.Request = Request
 		le.Function = os.Getenv("AWS_LAMBDA_FUNCTION_NAME")
 		le.AppEnv = os.Getenv("APP_ENV")
-		le.Service = Service
+		le.Service = callerService()
 	}
 
 	l, err := jsonMarshal(le)
@@ -152,6 +149,55 @@ func logIt(level Level, message string, data ...any) {
 	}()
 
 	wg.Wait()
+}
+
+// packageImportPath is this package's own import path — used to walk past
+// its own frames in callerService.
+const packageImportPath = "github.com/scrambledeggs/booky-go-common/logs"
+
+// callerService identifies which upstream microservice logged this entry, by
+// walking the call stack to the first frame outside this package — i.e.
+// whichever service's code called Debug/Info/Warn/etc. It's derived fresh on
+// every call rather than read from a shared variable set by some other
+// caller, so it's correct under concurrent use: a process like booky-ark
+// bundles many microservices' handlers into one binary, and a package-level
+// "current service" variable would race across concurrently running
+// handlers/messages, potentially misattributing one service's log line to
+// another.
+func callerService() string {
+	var pcs [32]uintptr
+	n := runtime.Callers(1, pcs[:])
+	frames := runtime.CallersFrames(pcs[:n])
+
+	for {
+		frame, more := frames.Next()
+		if !strings.HasPrefix(frame.Function, packageImportPath+".") {
+			return serviceFromFuncName(frame.Function)
+		}
+		if !more {
+			return ""
+		}
+	}
+}
+
+// serviceFromFuncName derives a service name from a fully-qualified function
+// name (as returned by runtime.Frame.Function), e.g.
+// "github.com/scrambledeggs/booky-athena/functions/X/handler.Handler" -> "booky-athena".
+//
+// Most upstream services declare "module github.com/scrambledeggs/X" in
+// their own go.mod, so this returns X. A few declare a bare module name with
+// no scrambledeggs/ prefix at all (e.g. "module booky-freyja") — for those,
+// this falls back to the first path segment, which is already the whole
+// module name.
+func serviceFromFuncName(name string) string {
+	parts := strings.Split(name, "/")
+	for i, p := range parts {
+		if p == "scrambledeggs" && i+1 < len(parts) {
+			return parts[i+1]
+		}
+	}
+
+	return parts[0]
 }
 
 // Print is dev-only console output — pretty-printed for terminal readability.
