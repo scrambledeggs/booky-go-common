@@ -111,10 +111,18 @@ func logIt(level Level, message string, data ...any) {
 	}
 
 	if level != PRINT {
+		caller := callerFuncName()
+
 		le.Request = Request
 		le.Function = os.Getenv("AWS_LAMBDA_FUNCTION_NAME")
+		if le.Function == "" {
+			// Real AWS Lambda always sets this env var; BCP/booky-ark and
+			// local dev never do, so fall back to deriving it from the
+			// caller's own stack frame.
+			le.Function = handlerNameFromFuncName(caller)
+		}
 		le.AppEnv = os.Getenv("APP_ENV")
-		le.Service = callerService()
+		le.Service = serviceFromFuncName(caller)
 	}
 
 	l, err := jsonMarshal(le)
@@ -152,19 +160,21 @@ func logIt(level Level, message string, data ...any) {
 }
 
 // packageImportPath is this package's own import path — used to walk past
-// its own frames in callerService.
+// its own frames in callerFuncName.
 const packageImportPath = "github.com/scrambledeggs/booky-go-common/logs"
 
-// callerService identifies which upstream microservice logged this entry, by
-// walking the call stack to the first frame outside this package — i.e.
-// whichever service's code called Debug/Info/Warn/etc. It's derived fresh on
-// every call rather than read from a shared variable set by some other
-// caller, so it's correct under concurrent use: a process like booky-ark
-// bundles many microservices' handlers into one binary, and a package-level
-// "current service" variable would race across concurrently running
-// handlers/messages, potentially misattributing one service's log line to
-// another.
-func callerService() string {
+// callerFuncName identifies who logged this entry, by walking the call stack
+// to the first frame outside this package and returning its fully-qualified
+// Go function name — i.e. whichever function called Debug/Info/Warn/etc. Both
+// serviceFromFuncName and handlerNameFromFuncName parse this same string.
+//
+// It's derived fresh on every call rather than read from a shared variable
+// set by some other caller, so it's correct under concurrent use: a process
+// like booky-ark bundles many microservices' handlers into one binary, and a
+// package-level "current caller" variable would race across concurrently
+// running handlers/messages, potentially misattributing one service's log
+// line to another.
+func callerFuncName() string {
 	var pcs [32]uintptr
 	n := runtime.Callers(1, pcs[:])
 	frames := runtime.CallersFrames(pcs[:n])
@@ -172,7 +182,7 @@ func callerService() string {
 	for {
 		frame, more := frames.Next()
 		if !strings.HasPrefix(frame.Function, packageImportPath+".") {
-			return serviceFromFuncName(frame.Function)
+			return frame.Function
 		}
 		if !more {
 			return ""
@@ -198,6 +208,29 @@ func serviceFromFuncName(name string) string {
 	}
 
 	return parts[0]
+}
+
+// handlerNameFromFuncName derives the upstream Lambda function's logical
+// name from a fully-qualified function name, e.g.
+// "github.com/scrambledeggs/booky-locations/functions/ReverseGeocodeV1/handler.Handler" -> "ReverseGeocodeV1"
+// "booky-orders/functions/GetOrderV1/handler.(*service).Handle" -> "GetOrderV1"
+//
+// Every upstream handler's exported entry point lives in a package literally
+// named "handler" (the upstream contract this monorepo documents); the
+// directory containing that package is the function's logical name — this
+// mirrors what AWS_LAMBDA_FUNCTION_NAME holds in real AWS. Returns "" when
+// the caller doesn't match this shape (e.g. booky-ark's own inline routes).
+func handlerNameFromFuncName(name string) string {
+	parts := strings.Split(name, "/")
+	if len(parts) < 2 {
+		return ""
+	}
+
+	if !strings.HasPrefix(parts[len(parts)-1], "handler.") {
+		return ""
+	}
+
+	return parts[len(parts)-2]
 }
 
 // Print is dev-only console output — pretty-printed for terminal readability.

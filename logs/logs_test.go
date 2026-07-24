@@ -119,6 +119,54 @@ func TestServiceFromFuncName(t *testing.T) {
 	}
 }
 
+// handlerNameFromFuncName is pure string parsing — exercise both real call
+// shapes upstream handlers actually use (confirmed against real service
+// code): a plain top-level Handler func, and a bound method value like
+// orders' New(pool).Handle. Also confirm it returns "" for shapes that don't
+// match the handler package convention at all (e.g. booky-ark's own inline
+// closures).
+func TestHandlerNameFromFuncName(t *testing.T) {
+	cases := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{"plain Handler func", "github.com/scrambledeggs/booky-locations/functions/ReverseGeocodeV1/handler.Handler", "ReverseGeocodeV1"},
+		{"bound method value", "booky-orders/functions/GetOrderV1/handler.(*service).Handle", "GetOrderV1"},
+		{"non-handler closure", "github.com/scrambledeggs/booky-ark/cmd/web.main.func1", ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := handlerNameFromFuncName(c.in); got != c.want {
+				t.Errorf("got %q, want %q", got, c.want)
+			}
+		})
+	}
+}
+
+// Real AWS Lambda always sets AWS_LAMBDA_FUNCTION_NAME; that value must win
+// over the caller-derived name so behavior there is unchanged.
+func TestLogIt_FunctionPrefersLambdaEnvVar(t *testing.T) {
+	t.Setenv("AWS_LAMBDA_FUNCTION_NAME", "real-lambda-name")
+
+	lines := captureOutput(t, func() {
+		Info("info note")
+	})
+
+	if len(lines) != 1 {
+		t.Fatalf("expected exactly 1 line of output, got %d: %v", len(lines), lines)
+	}
+
+	var raw map[string]any
+	if err := json.Unmarshal([]byte(lines[0]), &raw); err != nil {
+		t.Fatalf("output is not valid JSON: %v", err)
+	}
+
+	if raw["function"] != "real-lambda-name" {
+		t.Errorf(`"function" = %v, want %q`, raw["function"], "real-lambda-name")
+	}
+}
+
 // Regression for the data race a reviewer caught on the previous approach
 // (a package-level Service variable written by the caller before invoking a
 // handler): concurrent callers must not share any mutable state. This alone
